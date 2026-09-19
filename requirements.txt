@@ -1,0 +1,4 @@
+pandas>=2.2
+streamlit>=1.38
+matplotlib>=3.9
+# Optional: groq>=0.9  (only if you want LLM planning; heuristics work without it)
