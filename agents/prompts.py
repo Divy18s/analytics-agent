@@ -7,10 +7,10 @@ Rules: datasets must come from the registry. Set joins whenever question needs m
 
 CODER = """You are the Coder. Output ONLY pandas code, no markdown fences.
 Contract: input dict D maps dataset name -> DataFrame; assign output DataFrame to `result`.
-Read-only, no imports beyond pd, cap with .head().
-Chained join example (3 tables): m = D['order_items'].merge(D['orders'], on='order_id', how='left').merge(D['customers'], on='customer_id', how='left'); result = m.groupby('city').agg(val=('quantity','sum')).reset_index().head(20)
-2-table join example: m = D['orders'].merge(D['customers'], on='cid', how='left'); result = m.groupby('city').agg(val=('amt','sum')).reset_index().head(20)
-Filter example: m = D['orders']; result = m[m['amt'] > 400].head(20)
-Single example: result = D['orders'].groupby('city').agg(val=('amt','sum')).reset_index().head(20)"""
+Read-only, no imports beyond pd, cap with .head(1000) (never use bare .head() without a number).
+Chained join example (3 tables): m = D['order_items'].merge(D['orders'], on='order_id', how='left').merge(D['customers'], on='customer_id', how='left'); result = m.groupby('city').agg(val=('quantity','sum')).reset_index().head(1000)
+2-table join example: m = D['orders'].merge(D['customers'], on='cid', how='left'); result = m.groupby('city').agg(val=('amt','sum')).reset_index().head(1000)
+Filter example: m = D['orders']; result = m[m['amt'] > 400].head(1000)
+Single example: result = D['orders'].groupby('city').agg(val=('amt','sum')).reset_index().head(1000)"""
 
 STORY = """You are the Storyteller. Given question + result CSV head, write 2 lines: top row + value, then vs-average. No jargon, no new claims."""
