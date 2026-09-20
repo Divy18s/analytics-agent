@@ -4,11 +4,13 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from graph import get_query_history, run_query
+from tools.charts import pick_chart
 from tools.profiler import profile_all
 
 st.set_page_config(page_title="Analytics Agent (Multi-CSV)", layout="wide", page_icon="📊")
@@ -59,6 +61,13 @@ with t_audit:
     else:
         st.info("No human queries executed yet. Ask questions in the Chat tab to view logs here!")
 
+# Load and profile datasets if files are uploaded
+datasets = {}
+reg = {}
+if files:
+    datasets = {f.name: pd.read_csv(f) for f in files}
+    reg = profile_all(datasets)
+
 # TAB 1: CONVERSATIONAL CHAT
 with t_chat:
     if not files:
@@ -67,10 +76,6 @@ with t_chat:
             "(Try uploading files from `complex_data/*.csv` or `data/*.csv`)."
         )
     else:
-        # Load and profile uploaded datasets
-        datasets = {f.name: pd.read_csv(f) for f in files}
-        reg = profile_all(datasets)
-
         # Display dataset metrics
         cols = st.columns(min(len(datasets), 5))
         for (name, df), c in zip(datasets.items(), cols):
@@ -92,42 +97,44 @@ with t_chat:
                     st.markdown(msg.get("insight", ""))
                     if "table" in msg and not msg["table"].empty:
                         st.dataframe(msg["table"])
-                    if "fig" in msg and msg["fig"] is not None:
-                        st.pyplot(msg["fig"])
+                        # Render chart cleanly and free memory
+                        kind, fig = pick_chart(msg["table"])
+                        if fig is not None and kind != "none":
+                            st.pyplot(fig)
+                            plt.close(fig)
                     with st.expander("🛠️ Code & Execution Trace"):
                         st.code(msg.get("code", ""), language="python")
                         if msg.get("trace"):
                             st.code("\n".join(msg.get("trace", [])))
 
-        # Chat input box
-        prompt = st.chat_input("Ask a question about your uploaded CSVs (e.g. 'total shipping cost by city joining orders and customers')...")
-        if prompt:
-            # Display user message
-            st.session_state.messages.append({"role": "user", "content": prompt})
+        # Visual padding so long conversation doesn't hide behind sticky input bar
+        st.markdown("<div style='height: 80px;'></div>", unsafe_allow_html=True)
+
+# PINNED CHAT INPUT (Fixed at the bottom of the screen like ChatGPT)
+if files:
+    prompt = st.chat_input("Ask a question about your uploaded CSVs (e.g. 'total quantity by city joining order items orders customers')...")
+    if prompt:
+        # 1. Record user message
+        st.session_state.messages.append({"role": "user", "content": prompt})
+
+        # 2. Run query and get answer
+        with t_chat:
             with st.chat_message("user"):
                 st.markdown(f"**{prompt}**")
-
-            # Assistant response
             with st.chat_message("assistant"):
                 with st.spinner("Analyzing schema → planning joins → executing code → generating chart..."):
                     out = run_query(datasets, reg, prompt, source="ui")
 
-                st.markdown(out["insight"])
-                if not out["table"].empty:
-                    st.dataframe(out["table"])
-                if out["fig"] is not None:
-                    st.pyplot(out["fig"])
+        # 3. Store assistant message in session state
+        st.session_state.messages.append({
+            "role": "assistant",
+            "insight": out["insight"],
+            "table": out["table"],
+            "code": out["code"],
+            "trace": out["trace"]
+        })
 
-                with st.expander("🛠️ Code & Execution Trace"):
-                    st.code(out["code"], language="python")
-                    st.code("\n".join(out["trace"]))
-
-                # Save turn to session state
-                st.session_state.messages.append({
-                    "role": "assistant",
-                    "insight": out["insight"],
-                    "table": out["table"],
-                    "fig": out["fig"],
-                    "code": out["code"],
-                    "trace": out["trace"]
-                })
+        # 4. Rerun to smoothly render the new message and keep input bar pinned
+        st.rerun()
+else:
+    st.chat_input("Upload CSV files in the sidebar to start asking questions...", disabled=True)
