@@ -21,23 +21,45 @@ def _heuristic_plan(q: str, registry: dict) -> dict:
     def _score(n: str) -> int:
         return sum(1 for c in registry["datasets"][n]["columns"] if c["name"].lower() in ql)
     ranked = sorted(names, key=lambda n: (-_score(n), names.index(n)))
-    picked = [n for n in names if n.lower().split(".")[0] in ql] or [ranked[0]]
-    want_join = any(w in ql for w in ("join", "merge", "combin", " with ", " per customer", " per user"))
+    picked = [n for n in names if n.lower().split(".")[0] in ql]
+    want_join = any(w in ql for w in ("join", "merge", "combin", " with ", " per customer", " per user", " and "))
+    
     if not picked:
-        picked = names[:2] if (want_join and len(names) > 1) else [ranked[0]]
-    # if question names columns from a second file, include it (join or switch)
-    if len(picked) == 1 and ranked[0] != picked[0] and _score(ranked[0]) > 0:
-        picked = [picked[0], ranked[0]] if want_join or _score(picked[0]) == 0 else [ranked[0]]
-    join = None
+        picked = [r for r in ranked if _score(r) > 0]
+        if not picked:
+            picked = [ranked[0]]
+    if len(picked) == 1 and want_join:
+        for r in ranked:
+            if r not in picked and _score(r) > 0:
+                picked.append(r)
+                if len(picked) >= 3:
+                    break
+
+    joins = []
     if len(picked) > 1:
-        key = f"{picked[0]}<->{picked[1]}"
-        shared = registry["join_candidates"].get(key) or registry["join_candidates"].get(f"{picked[1]}<->{picked[0]}", [])
-        if shared:
-            join = {"left": picked[0], "right": picked[1], "on": shared[0], "how": "left"}
-        else:
-            picked = picked[:1]
+        # Build chained join sequence connecting picked datasets
+        connected = [picked[0]]
+        remaining = picked[1:]
+        while remaining:
+            found = False
+            for cand in remaining:
+                for base in connected:
+                    k1 = f"{base}<->{cand}"
+                    k2 = f"{cand}<->{base}"
+                    shared = registry["join_candidates"].get(k1) or registry["join_candidates"].get(k2, [])
+                    if shared:
+                        joins.append({"left": base, "right": cand, "on": shared[0], "how": "left"})
+                        connected.append(cand)
+                        remaining.remove(cand)
+                        found = True
+                        break
+                if found:
+                    break
+            if not found:
+                break
+        picked = connected
+
     prof = registry["datasets"][picked[0]]
-    # search columns across picked files (not just the first) for group/metric hits
     combo_cols = [c["name"] for p in picked for c in registry["datasets"][p]["columns"]]
     low = {c.lower(): c for c in combo_cols}
     g = next((low[c] for c in low if c in ql), None)
@@ -45,28 +67,30 @@ def _heuristic_plan(q: str, registry: dict) -> dict:
     m = next((n for n in nums if n.lower() in ql), (nums or [None])[0])
     if not g:
         g = (prof["cats"] or combo_cols)[0]
-    # ensure the primary file actually contains the group col; else switch/join
-    def _has(ds: str, col: str | None) -> bool:
-        return col is not None and col in [c["name"] for c in registry["datasets"][ds]["columns"]]
-    if not _has(picked[0], g):
-        owner = next((n for n in names if _has(n, g)), None)
-        if owner:
-            picked = [owner] if owner == picked[0] else ([picked[0], owner] if m and _has(picked[0], m) and not _has(owner, m) else [owner])
-            if len(picked) == 2:
-                key = f"{picked[0]}<->{picked[1]}"
-                shared = registry["join_candidates"].get(key) or registry["join_candidates"].get(f"{picked[1]}<->{picked[0]}", [])
-                join = {"left": picked[0], "right": picked[1], "on": shared[0], "how": "left"} if shared else None
-                if not join:
-                    picked = [owner]
-    return {"datasets": picked, "join": join, "op": "groupby",
-            "group_col": g, "metric_col": m, "agg": "sum", "limit": 20}
+
+    # Detect aggregation operator
+    if any(w in ql for w in ("average", "avg", "mean")):
+        agg = "mean"
+    elif any(w in ql for w in ("count", "number of", "how many")):
+        agg = "count"
+    elif any(w in ql for w in ("min", "minimum", "lowest")):
+        agg = "min"
+    elif any(w in ql for w in ("max", "maximum", "highest")):
+        agg = "max"
+    else:
+        agg = "sum"
+
+    join_obj = joins if len(joins) > 1 else (joins[0] if len(joins) == 1 else None)
+    return {"datasets": picked, "joins": joins if len(joins) > 1 else None,
+            "join": joins[0] if len(joins) == 1 else None, "op": "groupby",
+            "group_col": g, "metric_col": m, "agg": agg, "limit": 20}
 
 
 import json
 import time
 from pathlib import Path
 
-HISTORY_FILE = Path(__file__).resolve().parent / "evals" / "query_history.jsonl"
+HISTORY_FILE = Path(__file__).resolve().parent / "evals" / "user_query_history.jsonl"
 
 
 def _save_query_log(record: dict) -> None:
@@ -89,8 +113,9 @@ def get_query_history() -> list[dict]:
 
 
 def _code(plan: dict) -> str:
-    ds, j = plan.get("datasets", []), plan.get("join") or plan.get("joins")
+    ds, j = plan.get("datasets", []), plan.get("joins") or plan.get("join")
     g, m, agg, lim = plan.get("group_col"), plan.get("metric_col"), plan.get("agg", "sum"), int(plan.get("limit", 20) or 20)
+    filt = plan.get("filter")
     if isinstance(j, list) and len(j) > 0:
         base = f"D['{j[0]['left']}']"
         for step in j:
@@ -106,16 +131,27 @@ def _code(plan: dict) -> str:
         base = f"D['{l_ds}'].merge(D['{r_ds}'], on='{on_col}', how='{h}')"
     else:
         base = f"D['{ds[0]}']" if ds else "pd.DataFrame()"
+
+    filter_code = ""
+    if filt and isinstance(filt, dict) and filt.get("col"):
+        f_col = filt['col']
+        f_op = filt.get('op', '==')
+        f_val = filt.get('val')
+        if isinstance(f_val, str) and not f_val.isdigit():
+            filter_code = f"m = m[m['{f_col}'] {f_op} '{f_val}']; "
+        else:
+            filter_code = f"m = m[m['{f_col}'] {f_op} {f_val}]; "
+
     if g and m:
-        return (f"m = {base}; result = m.groupby('{g}')"
+        return (f"m = {base}; {filter_code}result = m.groupby('{g}')"
                 f".agg(val=('{(m)}','{agg}')).reset_index()"
                 f".sort_values('val', ascending=False).head({lim})")
     if g:
-        return f"m = {base}; result = m['{g}'].value_counts().reset_index().head({lim})"
-    return f"m = {base}; result = m.head({lim})"
+        return f"m = {base}; {filter_code}result = m['{g}'].value_counts().reset_index().head({lim})"
+    return f"m = {base}; {filter_code}result = m.head({lim})"
 
 
-def run_query(datasets: dict[str, pd.DataFrame], registry: dict, question: str) -> dict:
+def run_query(datasets: dict[str, pd.DataFrame], registry: dict, question: str, source: str = "ui") -> dict:
     trace = []
     p_llm = llm.plan(question, registry)
     plan = p_llm or _heuristic_plan(question, registry)
@@ -141,7 +177,7 @@ def run_query(datasets: dict[str, pd.DataFrame], registry: dict, question: str) 
         f"Top: {table.iloc[0].tolist()} over {len(table)} groups. Chart: {kind}."
         if len(table) else "No rows returned.")
     
-    # Store query retrieval record for history and comparison
+    # Store query retrieval record ONLY for human UI queries (keeps automated tests separate)
     record = {
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
         "question": question,
@@ -154,7 +190,8 @@ def run_query(datasets: dict[str, pd.DataFrame], registry: dict, question: str) 
         "trace": trace,
         "error": err
     }
-    _save_query_log(record)
+    if source == "ui":
+        _save_query_log(record)
 
     return {"plan": plan, "code": code, "table": table, "fig": fig,
             "chart": kind, "insight": insight, "trace": trace, "error": err, "record": record}

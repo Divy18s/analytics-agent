@@ -10,7 +10,7 @@ import pandas as pd
 BLOCKED = ("import os", "import sys", "subprocess", "socket", "open(",
            "__import__", "eval(", "exec(", "os.", "sys.", "to_csv",
            "to_excel", "to_sql", "to_pickle", "unlink", "remove",
-           "requests", "urllib", "shutil")
+           "requests", "urllib", "shutil", "drop table", "delete from", "truncate")
 MAX_ROWS = 1000
 
 

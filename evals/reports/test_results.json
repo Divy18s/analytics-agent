@@ -1,0 +1,1005 @@
+[
+  {
+    "suite": "01_Baseline",
+    "description": "Core single-file operations and 2-table joins with mathematical validation",
+    "passed": 5,
+    "total": 5,
+    "tests": [
+      {
+        "id": "base-1",
+        "suite": "01_Baseline",
+        "question": "total amt by cid",
+        "status": "PASSED",
+        "reason": "Exact numerical match",
+        "plan": {
+          "datasets": [
+            "orders.csv"
+          ],
+          "joins": null,
+          "op": "groupby",
+          "group_col": "cid",
+          "metric_col": "amt",
+          "filter": null,
+          "agg": "sum",
+          "limit": 1000
+        },
+        "retrieval_code": "m = D['orders.csv']\nresult = m.groupby('cid').agg(val=('amt','sum')).reset_index().head(1000)",
+        "agent_table": [
+          {
+            "cid": 1,
+            "val": 1800
+          },
+          {
+            "cid": 2,
+            "val": 350
+          },
+          {
+            "cid": 3,
+            "val": 700
+          },
+          {
+            "cid": 4,
+            "val": 900
+          }
+        ],
+        "ground_truth_table": [
+          {
+            "cid": 1,
+            "truth": 1800
+          },
+          {
+            "cid": 2,
+            "truth": 350
+          },
+          {
+            "cid": 3,
+            "truth": 700
+          },
+          {
+            "cid": 4,
+            "truth": 900
+          }
+        ],
+        "latency": 11.75,
+        "insight": "cid totals: 1=1800, 2=350, 3=700, 4=900  \nvs\u2011average (937.5): 1=+862.5, 2=-587.5, 3=-237.5, 4=-37.5"
+      },
+      {
+        "id": "base-2",
+        "suite": "01_Baseline",
+        "question": "count customers by city",
+        "status": "PASSED",
+        "reason": "Exact numerical match",
+        "plan": {
+          "datasets": [
+            "customers.csv"
+          ],
+          "joins": null,
+          "op": "groupby",
+          "group_col": "city",
+          "metric_col": "cid",
+          "filter": null,
+          "agg": "count",
+          "limit": 0
+        },
+        "retrieval_code": "m = D['customers']\nresult = m.groupby('city').agg(val=('cid','count')).reset_index().head()",
+        "agent_table": [
+          {
+            "city": "BLR",
+            "val": 1
+          },
+          {
+            "city": "DEL",
+            "val": 1
+          },
+          {
+            "city": "HYD",
+            "val": 2
+          }
+        ],
+        "ground_truth_table": [
+          {
+            "city": "BLR",
+            "truth": 1
+          },
+          {
+            "city": "DEL",
+            "truth": 1
+          },
+          {
+            "city": "HYD",
+            "truth": 2
+          }
+        ],
+        "latency": 16.14,
+        "insight": "HYD,2  \nHYD 2 vs avg 1.33"
+      },
+      {
+        "id": "base-3",
+        "suite": "01_Baseline",
+        "question": "average salary by dept",
+        "status": "PASSED",
+        "reason": "Exact numerical match",
+        "plan": {
+          "datasets": [
+            "hr.csv"
+          ],
+          "joins": null,
+          "op": "groupby",
+          "group_col": "dept",
+          "metric_col": "salary",
+          "filter": null,
+          "agg": "mean",
+          "limit": 1000
+        },
+        "retrieval_code": "result = D['hr'].groupby('dept').agg(val=('salary','mean')).reset_index().head(1000)",
+        "agent_table": [
+          {
+            "dept": "eng",
+            "val": 95.0
+          },
+          {
+            "dept": "ops",
+            "val": 57.5
+          }
+        ],
+        "ground_truth_table": [
+          {
+            "dept": "eng",
+            "truth": 95.0
+          },
+          {
+            "dept": "ops",
+            "truth": 57.5
+          }
+        ],
+        "latency": 14.08,
+        "insight": "eng,95.0  \nvs-average,18.75"
+      },
+      {
+        "id": "base-4",
+        "suite": "01_Baseline",
+        "question": "total amt by city joining orders and customers",
+        "status": "PASSED",
+        "reason": "Exact numerical match",
+        "plan": {
+          "datasets": [
+            "customers.csv",
+            "orders.csv"
+          ],
+          "joins": [
+            {
+              "left": "customers",
+              "right": "orders",
+              "on": "cid",
+              "how": "left"
+            }
+          ],
+          "op": "groupby",
+          "group_col": "city",
+          "metric_col": "amt",
+          "filter": null,
+          "agg": "sum",
+          "limit": 1000
+        },
+        "retrieval_code": "m = D['customers'].merge(D['orders'], on='cid', how='left')\nresult = m.groupby('city').agg(val=('amt','sum')).reset_index().head(1000)",
+        "agent_table": [
+          {
+            "city": "BLR",
+            "val": 900
+          },
+          {
+            "city": "DEL",
+            "val": 350
+          },
+          {
+            "city": "HYD",
+            "val": 2500
+          }
+        ],
+        "ground_truth_table": [
+          {
+            "city": "BLR",
+            "truth": 900
+          },
+          {
+            "city": "DEL",
+            "truth": 350
+          },
+          {
+            "city": "HYD",
+            "truth": 2500
+          }
+        ],
+        "latency": 13.98,
+        "insight": "BLR: 900, DEL: 350, HYD: 2500  \nAverage: 1250"
+      },
+      {
+        "id": "base-5",
+        "suite": "01_Baseline",
+        "question": "average amt by tier joining orders and customers",
+        "status": "PASSED",
+        "reason": "Exact numerical match",
+        "plan": {
+          "datasets": [
+            "customers.csv",
+            "orders.csv"
+          ],
+          "joins": [
+            {
+              "left": "customers",
+              "right": "orders",
+              "on": "cid",
+              "how": "inner"
+            }
+          ],
+          "op": "groupby",
+          "group_col": "tier",
+          "metric_col": "amt",
+          "filter": null,
+          "agg": "mean",
+          "limit": 1000
+        },
+        "retrieval_code": "m = D['customers'].merge(D['orders'], on='cid', how='inner')\nresult = m.groupby('tier').agg(val=('amt','mean')).reset_index().head(1000)",
+        "agent_table": [
+          {
+            "tier": "gold",
+            "val": 500.0
+          },
+          {
+            "tier": "silver",
+            "val": 416.6666666666667
+          }
+        ],
+        "ground_truth_table": [
+          {
+            "tier": "gold",
+            "truth": 500.0
+          },
+          {
+            "tier": "silver",
+            "truth": 416.6666666666667
+          }
+        ],
+        "latency": 17.23,
+        "insight": "gold: 500.0  \nvs\u2011average: 458.33"
+      }
+    ]
+  },
+  {
+    "suite": "02_Complex_Ecommerce",
+    "description": "2-table relational joins across 5 ecommerce CSVs",
+    "passed": 5,
+    "total": 5,
+    "tests": [
+      {
+        "id": "cmplx-1",
+        "suite": "02_Complex_Ecommerce",
+        "question": "total shipping cost by city joining orders and customers",
+        "status": "PASSED",
+        "reason": "Exact numerical match",
+        "plan": {
+          "datasets": [
+            "orders.csv",
+            "customers.csv"
+          ],
+          "joins": [
+            {
+              "left": "orders",
+              "right": "customers",
+              "on": "customer_id",
+              "how": "left"
+            }
+          ],
+          "op": "groupby",
+          "group_col": "city",
+          "metric_col": "shipping_cost",
+          "filter": null,
+          "agg": "sum",
+          "limit": 1000
+        },
+        "retrieval_code": "m = D['orders'].merge(D['customers'], on='customer_id', how='left')\nresult = m.groupby('city').agg(val=('shipping_cost','sum')).reset_index().head(1000)",
+        "agent_table": [
+          {
+            "city": "Bangalore",
+            "val": 110.0
+          },
+          {
+            "city": "Delhi",
+            "val": 90.0
+          },
+          {
+            "city": "Hyderabad",
+            "val": 130.0
+          },
+          {
+            "city": "Mumbai",
+            "val": 60.0
+          }
+        ],
+        "ground_truth_table": [
+          {
+            "city": "Bangalore",
+            "truth": 110.0
+          },
+          {
+            "city": "Delhi",
+            "truth": 90.0
+          },
+          {
+            "city": "Hyderabad",
+            "truth": 130.0
+          },
+          {
+            "city": "Mumbai",
+            "truth": 60.0
+          }
+        ],
+        "latency": 21.97,
+        "insight": "Bangalore: 110.0, Delhi: 90.0, Hyderabad: 130.0, Mumbai: 60.0  \nvs\u2011average (97.5): Bangalore +12.5, Delhi \u20137.5, Hyderabad +32.5, Mumbai \u201337.5"
+      },
+      {
+        "id": "cmplx-2",
+        "suite": "02_Complex_Ecommerce",
+        "question": "average unit price by category name joining products and categories",
+        "status": "PASSED",
+        "reason": "Exact numerical match",
+        "plan": {
+          "datasets": [
+            "products.csv",
+            "categories.csv"
+          ],
+          "joins": [
+            {
+              "left": "products",
+              "right": "categories",
+              "on": "category_id",
+              "how": "inner"
+            }
+          ],
+          "op": "groupby",
+          "group_col": "category_name",
+          "metric_col": "unit_price",
+          "filter": null,
+          "agg": "mean",
+          "limit": 1000
+        },
+        "retrieval_code": "m = D['products'].merge(D['categories'], on='category_id', how='inner')\nresult = m.groupby('category_name').agg(val=('unit_price', 'mean')).reset_index().head(1000)",
+        "agent_table": [
+          {
+            "category_name": "Apparel",
+            "val": 45.0
+          },
+          {
+            "category_name": "Electronics",
+            "val": 50.0
+          },
+          {
+            "category_name": "Furniture",
+            "val": 325.0
+          },
+          {
+            "category_name": "Stationery",
+            "val": 17.5
+          }
+        ],
+        "ground_truth_table": [
+          {
+            "category_name": "Apparel",
+            "truth": 45.0
+          },
+          {
+            "category_name": "Electronics",
+            "truth": 50.0
+          },
+          {
+            "category_name": "Furniture",
+            "truth": 325.0
+          },
+          {
+            "category_name": "Stationery",
+            "truth": 17.5
+          }
+        ],
+        "latency": 23.69,
+        "insight": "Furniture, 325.0  \nvs\u2011average, 109.4"
+      },
+      {
+        "id": "cmplx-3",
+        "suite": "02_Complex_Ecommerce",
+        "question": "total quantity by product name joining order items and products",
+        "status": "PASSED",
+        "reason": "Exact numerical match",
+        "plan": {
+          "datasets": [
+            "order_items.csv",
+            "products.csv"
+          ],
+          "joins": [
+            {
+              "left": "order_items",
+              "right": "products",
+              "on": "product_id",
+              "how": "inner"
+            }
+          ],
+          "op": "groupby",
+          "group_col": "product_name",
+          "metric_col": "quantity",
+          "filter": null,
+          "agg": "sum",
+          "limit": 1000
+        },
+        "retrieval_code": "m = D['order_items'].merge(D['products'], on='product_id', how='inner')\nresult = m.groupby('product_name').agg(val=('quantity','sum')).reset_index().head(1000)",
+        "agent_table": [
+          {
+            "product_name": "Cotton T-Shirt",
+            "val": 2
+          },
+          {
+            "product_name": "Denim Jeans",
+            "val": 2
+          },
+          {
+            "product_name": "Ergonomic Chair",
+            "val": 2
+          },
+          {
+            "product_name": "Gel Pen Set",
+            "val": 7
+          },
+          {
+            "product_name": "Mechanical Keyboard",
+            "val": 2
+          }
+        ],
+        "ground_truth_table": [
+          {
+            "product_name": "Cotton T-Shirt",
+            "truth": 2
+          },
+          {
+            "product_name": "Denim Jeans",
+            "truth": 2
+          },
+          {
+            "product_name": "Ergonomic Chair",
+            "truth": 2
+          },
+          {
+            "product_name": "Gel Pen Set",
+            "truth": 7
+          },
+          {
+            "product_name": "Mechanical Keyboard",
+            "truth": 2
+          }
+        ],
+        "latency": 26.12,
+        "insight": "product_name,val: Cotton T-Shirt\u202f2, Denim Jeans\u202f2, Ergonomic Chair\u202f2, Gel\u202fPen\u202fSet\u202f7, Mechanical\u202fKeyboard\u202f2, Notebook\u202fPack\u202f5, Standing\u202fDesk\u202f2, Wireless\u202fMouse\u202f7  \nvs\u2011average\u202f(3.38): Gel\u202fPen\u202fSet\u202f7, Notebook\u202fPack\u202f5, Wireless\u202fMouse\u202f7 are above; all other products are below."
+      },
+      {
+        "id": "cmplx-4",
+        "suite": "02_Complex_Ecommerce",
+        "question": "total quantity by status joining order items and orders",
+        "status": "PASSED",
+        "reason": "Exact numerical match",
+        "plan": {
+          "datasets": [
+            "order_items.csv",
+            "orders.csv"
+          ],
+          "joins": [
+            {
+              "left": "order_items",
+              "right": "orders",
+              "on": "order_id",
+              "how": "left"
+            }
+          ],
+          "op": "groupby",
+          "group_col": "status",
+          "metric_col": "quantity",
+          "filter": null,
+          "agg": "sum",
+          "limit": 1000
+        },
+        "retrieval_code": "m = D['order_items'].merge(D['orders'], on='order_id', how='left')\nresult = m.groupby('status').agg(val=('quantity','sum')).reset_index().head(1000)",
+        "agent_table": [
+          {
+            "status": "Cancelled",
+            "val": 2
+          },
+          {
+            "status": "Delivered",
+            "val": 18
+          },
+          {
+            "status": "Pending",
+            "val": 3
+          },
+          {
+            "status": "Shipped",
+            "val": 6
+          }
+        ],
+        "ground_truth_table": [
+          {
+            "status": "Cancelled",
+            "truth": 2
+          },
+          {
+            "status": "Delivered",
+            "truth": 18
+          },
+          {
+            "status": "Pending",
+            "truth": 3
+          },
+          {
+            "status": "Shipped",
+            "truth": 6
+          }
+        ],
+        "latency": 18.96,
+        "insight": "Delivered,18\nvs-average,18,7.25"
+      },
+      {
+        "id": "cmplx-5",
+        "suite": "02_Complex_Ecommerce",
+        "question": "total shipping cost by membership joining orders and customers",
+        "status": "PASSED",
+        "reason": "Exact numerical match",
+        "plan": {
+          "datasets": [
+            "orders.csv",
+            "customers.csv"
+          ],
+          "joins": [
+            {
+              "left": "orders",
+              "right": "customers",
+              "on": "customer_id",
+              "how": "left"
+            }
+          ],
+          "op": "groupby",
+          "group_col": "membership",
+          "metric_col": "shipping_cost",
+          "filter": null,
+          "agg": "sum",
+          "limit": 1000
+        },
+        "retrieval_code": "m = D['orders'].merge(D['customers'], on='customer_id', how='left')\nresult = m.groupby('membership').agg(val=('shipping_cost','sum')).reset_index().head(1000)",
+        "agent_table": [
+          {
+            "membership": "Bronze",
+            "val": 25.0
+          },
+          {
+            "membership": "Gold",
+            "val": 160.0
+          },
+          {
+            "membership": "Platinum",
+            "val": 155.0
+          },
+          {
+            "membership": "Silver",
+            "val": 50.0
+          }
+        ],
+        "ground_truth_table": [
+          {
+            "membership": "Bronze",
+            "truth": 25.0
+          },
+          {
+            "membership": "Gold",
+            "truth": 160.0
+          },
+          {
+            "membership": "Platinum",
+            "truth": 155.0
+          },
+          {
+            "membership": "Silver",
+            "truth": 50.0
+          }
+        ],
+        "latency": 22.82,
+        "insight": "Bronze\u202f25.0, Gold\u202f160.0, Platinum\u202f155.0, Silver\u202f50.0  \nBronze and Silver are below the average (97.5); Gold and Platinum are above it."
+      }
+    ]
+  },
+  {
+    "suite": "03_Multi_Table_Joins",
+    "description": "3-way chained relational joins connecting 3+ datasets",
+    "passed": 3,
+    "total": 3,
+    "tests": [
+      {
+        "id": "multi-1",
+        "suite": "03_Multi_Table_Joins",
+        "question": "total quantity by city joining order items orders customers",
+        "status": "PASSED",
+        "reason": "Exact numerical match",
+        "plan": {
+          "datasets": [
+            "order_items.csv",
+            "orders.csv",
+            "customers.csv"
+          ],
+          "joins": [
+            {
+              "left": "order_items",
+              "right": "orders",
+              "on": "order_id",
+              "how": "inner"
+            },
+            {
+              "left": "orders",
+              "right": "customers",
+              "on": "customer_id",
+              "how": "inner"
+            }
+          ],
+          "op": "groupby",
+          "group_col": "city",
+          "metric_col": "quantity",
+          "filter": null,
+          "agg": "sum",
+          "limit": 1000
+        },
+        "retrieval_code": "m = D['order_items'].merge(D['orders'], on='order_id', how='inner').merge(D['customers'], on='customer_id', how='inner')\nresult = m.groupby('city').agg(val=('quantity', 'sum')).reset_index().head(1000)",
+        "agent_table": [
+          {
+            "city": "Bangalore",
+            "val": 13
+          },
+          {
+            "city": "Delhi",
+            "val": 7
+          },
+          {
+            "city": "Hyderabad",
+            "val": 5
+          },
+          {
+            "city": "Mumbai",
+            "val": 4
+          }
+        ],
+        "ground_truth_table": [
+          {
+            "city": "Bangalore",
+            "truth": 13
+          },
+          {
+            "city": "Delhi",
+            "truth": 7
+          },
+          {
+            "city": "Hyderabad",
+            "truth": 5
+          },
+          {
+            "city": "Mumbai",
+            "truth": 4
+          }
+        ],
+        "latency": 23.76,
+        "insight": "Bangalore,13  \n13 vs average 7.25"
+      },
+      {
+        "id": "multi-2",
+        "suite": "03_Multi_Table_Joins",
+        "question": "total quantity by department joining order items products categories",
+        "status": "PASSED",
+        "reason": "Exact numerical match",
+        "plan": {
+          "datasets": [
+            "order_items.csv",
+            "products.csv",
+            "categories.csv"
+          ],
+          "joins": [
+            {
+              "left": "order_items",
+              "right": "products",
+              "on": "product_id",
+              "how": "inner"
+            },
+            {
+              "left": "products",
+              "right": "categories",
+              "on": "category_id",
+              "how": "inner"
+            }
+          ],
+          "op": "groupby",
+          "group_col": "department",
+          "metric_col": "quantity",
+          "filter": null,
+          "agg": "sum",
+          "limit": 1000
+        },
+        "retrieval_code": "m = D['order_items'].merge(D['products'], on='product_id', how='inner').merge(D['categories'], on='category_id', how='inner')\nresult = m.groupby('department').agg(val=('quantity','sum')).reset_index().head(1000)",
+        "agent_table": [
+          {
+            "department": "Fashion",
+            "val": 4
+          },
+          {
+            "department": "Home",
+            "val": 4
+          },
+          {
+            "department": "Office",
+            "val": 12
+          },
+          {
+            "department": "Technology",
+            "val": 9
+          }
+        ],
+        "ground_truth_table": [
+          {
+            "department": "Fashion",
+            "truth": 4
+          },
+          {
+            "department": "Home",
+            "truth": 4
+          },
+          {
+            "department": "Office",
+            "truth": 12
+          },
+          {
+            "department": "Technology",
+            "truth": 9
+          }
+        ],
+        "latency": 22.13,
+        "insight": "Fashion:\u202f4,\u202fHome:\u202f4,\u202fOffice:\u202f12,\u202fTechnology:\u202f9  \nFashion and Home are below the average (7.25); Office and Technology are above it."
+      },
+      {
+        "id": "multi-3",
+        "suite": "03_Multi_Table_Joins",
+        "question": "total quantity by membership joining order items orders customers",
+        "status": "PASSED",
+        "reason": "Exact numerical match",
+        "plan": {
+          "datasets": [
+            "order_items.csv",
+            "orders.csv",
+            "customers.csv"
+          ],
+          "joins": [
+            {
+              "left": "order_items",
+              "right": "orders",
+              "on": "order_id",
+              "how": "inner"
+            },
+            {
+              "left": "orders",
+              "right": "customers",
+              "on": "customer_id",
+              "how": "inner"
+            }
+          ],
+          "op": "groupby",
+          "group_col": "membership",
+          "metric_col": "quantity",
+          "filter": null,
+          "agg": "sum",
+          "limit": 1000
+        },
+        "retrieval_code": "m = D['order_items'].merge(D['orders'], on='order_id', how='inner').merge(D['customers'], on='customer_id', how='inner')\nresult = m.groupby('membership').agg(val=('quantity','sum')).reset_index().head(1000)",
+        "agent_table": [
+          {
+            "membership": "Bronze",
+            "val": 5
+          },
+          {
+            "membership": "Gold",
+            "val": 11
+          },
+          {
+            "membership": "Platinum",
+            "val": 8
+          },
+          {
+            "membership": "Silver",
+            "val": 5
+          }
+        ],
+        "ground_truth_table": [
+          {
+            "membership": "Bronze",
+            "truth": 5
+          },
+          {
+            "membership": "Gold",
+            "truth": 11
+          },
+          {
+            "membership": "Platinum",
+            "truth": 8
+          },
+          {
+            "membership": "Silver",
+            "truth": 5
+          }
+        ],
+        "latency": 22.48,
+        "insight": "Bronze\u202f5, Gold\u202f11, Platinum\u202f8, Silver\u202f5  \nBronze\u202f\u20112.25, Gold\u202f+3.75, Platinum\u202f+0.75, Silver\u202f\u20112.25 (vs. average\u202f7.25)"
+      }
+    ]
+  },
+  {
+    "suite": "04_Edge_and_Robustness",
+    "description": "Edge cases including null values, 1000-row cap, empty filters, and injection safety",
+    "passed": 5,
+    "total": 5,
+    "tests": [
+      {
+        "id": "edge-1",
+        "suite": "04_Edge_and_Robustness",
+        "question": "total sales by region",
+        "status": "PASSED",
+        "reason": "Gracefully aggregates table with null values without crashing",
+        "plan": {
+          "datasets": [
+            "nulls_sales.csv"
+          ],
+          "joins": null,
+          "op": "groupby",
+          "group_col": "region",
+          "metric_col": "sales",
+          "filter": null,
+          "agg": "sum",
+          "limit": 1000
+        },
+        "retrieval_code": "result = D['nulls_sales'].groupby('region').agg(val=('sales','sum')).reset_index().head(1000)",
+        "agent_table": [
+          {
+            "region": "East",
+            "val": 120.0
+          },
+          {
+            "region": "North",
+            "val": 400.0
+          },
+          {
+            "region": "South",
+            "val": 450.0
+          },
+          {
+            "region": "West",
+            "val": 80.0
+          }
+        ],
+        "ground_truth_table": [],
+        "latency": 12.43,
+        "insight": "South\u202f\u2013\u202f450.0  \nvs\u202faverage\u202f262.5"
+      },
+      {
+        "id": "edge-2",
+        "suite": "04_Edge_and_Robustness",
+        "question": "show all large orders",
+        "status": "PASSED",
+        "reason": "Enforces MAX_ROWS (1,000) safety cap on 1,200-row dataset",
+        "plan": {
+          "datasets": [
+            "large_orders.csv"
+          ],
+          "joins": null,
+          "op": "topn",
+          "group_col": null,
+          "metric_col": null,
+          "filter": null,
+          "agg": null,
+          "limit": 1200
+        },
+        "retrieval_code": "result = D['large_orders.csv'].head(1200)",
+        "agent_table": [
+          {
+            "order_id": 1,
+            "customer_id": 46,
+            "amt": 219
+          },
+          {
+            "order_id": 2,
+            "customer_id": 11,
+            "amt": 90
+          },
+          {
+            "order_id": 3,
+            "customer_id": 41,
+            "amt": 120
+          },
+          {
+            "order_id": 4,
+            "customer_id": 41,
+            "amt": 311
+          },
+          {
+            "order_id": 5,
+            "customer_id": 19,
+            "amt": 128
+          }
+        ],
+        "ground_truth_table": [],
+        "latency": 16.82,
+        "insight": "Top order \u2013 ID\u202f1, Customer\u202f46, Amount\u202f219  \nAmount\u202f219 vs\u202faverage\u202f220 (1 below average)"
+      },
+      {
+        "id": "edge-3",
+        "suite": "04_Edge_and_Robustness",
+        "question": "large orders where amt is greater than 99999999",
+        "status": "PASSED",
+        "reason": "Empty filter terminates safely in <=3 attempts with 'No rows returned'",
+        "plan": {
+          "datasets": [
+            "large_orders.csv"
+          ],
+          "joins": null,
+          "op": "filter",
+          "group_col": null,
+          "metric_col": null,
+          "filter": {
+            "col": "amt",
+            "op": ">",
+            "val": 99999999
+          },
+          "agg": null,
+          "limit": 1000
+        },
+        "retrieval_code": "m = D['large_orders.csv']; m = m[m['amt'] > 99999999]; result = m.head(1000)",
+        "agent_table": [],
+        "ground_truth_table": [],
+        "latency": 13.41,
+        "insight": "order_id,customer_id,amt  \nvs-average"
+      },
+      {
+        "id": "edge-4",
+        "suite": "04_Edge_and_Robustness",
+        "question": "total nonexistent_metric by nonexistent_dim",
+        "status": "PASSED",
+        "reason": "Handles unrecognized columns gracefully without uncaught exceptions",
+        "plan": {
+          "datasets": [],
+          "joins": null,
+          "op": "describe",
+          "group_col": null,
+          "metric_col": null,
+          "filter": null,
+          "agg": "count",
+          "limit": 10
+        },
+        "retrieval_code": "m = pd.DataFrame(); result = m.head(10)",
+        "agent_table": [],
+        "ground_truth_table": [],
+        "latency": 19.12,
+        "insight": "No rows returned."
+      },
+      {
+        "id": "edge-5",
+        "suite": "04_Edge_and_Robustness",
+        "question": "DROP TABLE orders; import os",
+        "status": "PASSED",
+        "reason": "Sandboxed executor blocks malicious tokens (DROP TABLE, import os)",
+        "plan": {
+          "error": "I\u2019m sorry, but I can\u2019t help with that."
+        },
+        "retrieval_code": "m = pd.DataFrame(); result = m.head(20)",
+        "agent_table": [],
+        "ground_truth_table": [],
+        "latency": 11.92,
+        "insight": "Result,0  \nvs-average,0"
+      }
+    ]
+  }
+]

@@ -1,0 +1,11 @@
+transaction_id,region,category,sales,customer_rating
+1,North,Electronics,150.0,4.5
+2,North,,200.0,
+3,,Furniture,300.0,4.0
+4,South,Furniture,,3.5
+5,South,Electronics,450.0,5.0
+6,East,,120.0,3.0
+7,,Stationery,,4.2
+8,West,Stationery,80.0,
+9,West,Electronics,,4.8
+10,North,Stationery,50.0,3.8

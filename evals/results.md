@@ -1,11 +1,57 @@
-# Eval results
+# Consolidated Test Suite & Retrieval Audit
 
-Passed 5/5 + join_shape_ok=True
+**Overall Score:** `18/18 PASSED` (100.0%)
+**Generated:** 2026-09-20 12:32:07
 
-| query | result | detail |
-|---|---|---|
-| total amt by cid | PASS | chart=bar | plan={'datasets': ['orders.csv'], 'join': None, 'op': 'groupby', 'group_col': 'cid', 'metric_col': 'cid', 'agg': 'sum', 'limit': 20} |
-| count customers by city | PASS | chart=bar | plan={'datasets': ['customers.csv'], 'join': None, 'op': 'groupby', 'group_col': 'city', 'metric_col': 'cid', 'agg': 'sum', 'limit': 20} |
-| average salary by dept | PASS | chart=bar | plan={'datasets': ['hr.csv'], 'join': None, 'op': 'groupby', 'group_col': 'dept', 'metric_col': 'salary', 'agg': 'sum', 'limit': 20} |
-| total amt by city join orders customers | PASS | chart=bar | plan={'datasets': ['customers.csv', 'orders.csv'], 'join': {'left': 'customers.csv', 'right': 'orders.csv', 'on': 'cid', 'how': 'left'}, 'op': 'groupby', 'group_col': 'city', 'metric_col': 'amt', 'agg': 'sum', 'limit': 20} |
-| average amt by tier | PASS | chart=bar | plan={'datasets': ['customers.csv'], 'join': None, 'op': 'groupby', 'group_col': 'tier', 'metric_col': 'cid', 'agg': 'sum', 'limit': 20} |
+## Summary by Test Suite
+
+| Suite | Passed | Total | Rate | Status |
+|---|---|---|---|---|
+| **01_Baseline** | 5 | 5 | 100.0% | **PASSED** |
+| **02_Complex_Ecommerce** | 5 | 5 | 100.0% | **PASSED** |
+| **03_Multi_Table_Joins** | 3 | 3 | 100.0% | **PASSED** |
+| **04_Edge_and_Robustness** | 5 | 5 | 100.0% | **PASSED** |
+
+## Detailed Test Cases & Ground Truth Comparison
+
+### 01_Baseline
+*Core single-file operations and 2-table joins with mathematical validation*
+
+| ID | Query | Result | Retrieval Code | Details |
+|---|---|---|---|---|
+| `base-1` | total amt by cid | **PASSED** | `m = D['orders.csv'] result = m.groupby('cid').agg(val=('amt'...` | Exact numerical match |
+| `base-2` | count customers by city | **PASSED** | `m = D['customers'] result = m.groupby('city').agg(val=('cid'...` | Exact numerical match |
+| `base-3` | average salary by dept | **PASSED** | `result = D['hr'].groupby('dept').agg(val=('salary','mean'))....` | Exact numerical match |
+| `base-4` | total amt by city joining orders and customers | **PASSED** | `m = D['customers'].merge(D['orders'], on='cid', how='left') ...` | Exact numerical match |
+| `base-5` | average amt by tier joining orders and customers | **PASSED** | `m = D['customers'].merge(D['orders'], on='cid', how='inner')...` | Exact numerical match |
+
+### 02_Complex_Ecommerce
+*2-table relational joins across 5 ecommerce CSVs*
+
+| ID | Query | Result | Retrieval Code | Details |
+|---|---|---|---|---|
+| `cmplx-1` | total shipping cost by city joining orders and customers | **PASSED** | `m = D['orders'].merge(D['customers'], on='customer_id', how=...` | Exact numerical match |
+| `cmplx-2` | average unit price by category name joining products and categories | **PASSED** | `m = D['products'].merge(D['categories'], on='category_id', h...` | Exact numerical match |
+| `cmplx-3` | total quantity by product name joining order items and products | **PASSED** | `m = D['order_items'].merge(D['products'], on='product_id', h...` | Exact numerical match |
+| `cmplx-4` | total quantity by status joining order items and orders | **PASSED** | `m = D['order_items'].merge(D['orders'], on='order_id', how='...` | Exact numerical match |
+| `cmplx-5` | total shipping cost by membership joining orders and customers | **PASSED** | `m = D['orders'].merge(D['customers'], on='customer_id', how=...` | Exact numerical match |
+
+### 03_Multi_Table_Joins
+*3-way chained relational joins connecting 3+ datasets*
+
+| ID | Query | Result | Retrieval Code | Details |
+|---|---|---|---|---|
+| `multi-1` | total quantity by city joining order items orders customers | **PASSED** | `m = D['order_items'].merge(D['orders'], on='order_id', how='...` | Exact numerical match |
+| `multi-2` | total quantity by department joining order items products categories | **PASSED** | `m = D['order_items'].merge(D['products'], on='product_id', h...` | Exact numerical match |
+| `multi-3` | total quantity by membership joining order items orders customers | **PASSED** | `m = D['order_items'].merge(D['orders'], on='order_id', how='...` | Exact numerical match |
+
+### 04_Edge_and_Robustness
+*Edge cases including null values, 1000-row cap, empty filters, and injection safety*
+
+| ID | Query | Result | Retrieval Code | Details |
+|---|---|---|---|---|
+| `edge-1` | total sales by region | **PASSED** | `result = D['nulls_sales'].groupby('region').agg(val=('sales'...` | Gracefully aggregates table with null values without crashing |
+| `edge-2` | show all large orders | **PASSED** | `result = D['large_orders.csv'].head(1200)...` | Enforces MAX_ROWS (1,000) safety cap on 1,200-row dataset |
+| `edge-3` | large orders where amt is greater than 99999999 | **PASSED** | `m = D['large_orders.csv']; m = m[m['amt'] > 99999999]; resul...` | Empty filter terminates safely in <=3 attempts with 'No rows returned' |
+| `edge-4` | total nonexistent_metric by nonexistent_dim | **PASSED** | `m = pd.DataFrame(); result = m.head(10)...` | Handles unrecognized columns gracefully without uncaught exceptions |
+| `edge-5` | DROP TABLE orders; import os | **PASSED** | `m = pd.DataFrame(); result = m.head(20)...` | Sandboxed executor blocks malicious tokens (DROP TABLE, import os) |

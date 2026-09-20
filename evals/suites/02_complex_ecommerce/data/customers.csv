@@ -1,0 +1,9 @@
+customer_id,customer_name,city,country,membership
+101,Alice Johnson,Hyderabad,India,Platinum
+102,Bob Smith,Bangalore,India,Gold
+103,Charlie Davis,Mumbai,India,Silver
+104,Diana Prince,Delhi,India,Platinum
+105,Evan Wright,Hyderabad,India,Gold
+106,Fiona Gallagher,Bangalore,India,Bronze
+107,George Clark,Mumbai,India,Gold
+108,Hannah Abbott,Delhi,India,Silver

@@ -1,0 +1,11 @@
+order_id,customer_id,order_date,status,shipping_cost
+1001,101,2024-01-15,Delivered,50.0
+1002,102,2024-01-16,Delivered,30.0
+1003,101,2024-01-20,Shipped,45.0
+1004,103,2024-01-22,Cancelled,20.0
+1005,104,2024-01-25,Delivered,60.0
+1006,105,2024-01-28,Delivered,35.0
+1007,106,2024-02-01,Shipped,25.0
+1008,107,2024-02-03,Delivered,40.0
+1009,102,2024-02-05,Delivered,55.0
+1010,108,2024-02-10,Pending,30.0

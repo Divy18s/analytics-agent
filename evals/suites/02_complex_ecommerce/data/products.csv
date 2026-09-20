@@ -1,0 +1,9 @@
+product_id,product_name,category_id,unit_price,stock_qty
+201,Wireless Mouse,1,25.0,150
+202,Mechanical Keyboard,1,75.0,80
+203,Ergonomic Chair,2,250.0,40
+204,Standing Desk,2,400.0,25
+205,Gel Pen Set,3,15.0,300
+206,Notebook Pack,3,20.0,200
+207,Cotton T-Shirt,4,30.0,120
+208,Denim Jeans,4,60.0,90
