@@ -1,0 +1,61 @@
+product_id,product_name,category_id,unit_price,stock_qty
+201,Wireless Mouse,1,1480.35,358
+202,Mechanical Keyboard,1,1107.7,81
+203,USB-C Hub,1,1917.38,112
+204,Monitor 27in Pro,1,1619.37,224
+205,Laptop Stand,1,863.26,97
+206,Webcam HD Lite,1,1400.73,369
+207,Bluetooth Speaker,1,2130.74,159
+208,SSD 1TB,1,860.0,353
+209,Ergonomic Chair,2,12657.4,303
+210,Standing Desk,2,4008.1,453
+211,Bookshelf Pro,2,5907.41,469
+212,Coffee Table,2,10361.19,262
+213,Sofa 3-Seater,2,8492.23,58
+214,Bed Frame,2,9457.66,179
+215,Wardrobe,2,4485.32,197
+216,Gel Pen Set,3,244.07,199
+217,Notebook Pack Lite,3,154.45,455
+218,Stapler Pro,3,189.89,64
+219,Sticky Notes,3,444.55,140
+220,Marker Set,3,404.48,144
+221,File Folder,3,180.42,176
+222,Printer Paper,3,129.31,98
+223,Cotton T-Shirt,4,1579.79,251
+224,Denim Jeans,4,900.94,355
+225,Hoodie Pro,4,564.28,349
+226,Sneakers,4,732.0,453
+227,Jacket,4,592.78,273
+228,Kurta Lite,4,490.23,215
+229,Saree,4,907.54,59
+230,Shorts,4,1225.15,11
+231,Basmati Rice 5kg,5,421.08,63
+232,Atta 10kg Pro,5,484.29,319
+233,Cooking Oil 5L,5,216.28,411
+234,Tea Powder,5,603.07,171
+235,Coffee Beans,5,405.48,493
+236,Dry Fruits Mix,5,510.91,313
+237,Honey,5,369.8,471
+238,Cricket Bat,6,905.73,199
+239,Football Pro,6,1107.52,217
+240,Yoga Mat,6,1765.82,376
+241,Dumbbell Set,6,1892.83,419
+242,Badminton Racket,6,2105.8,197
+243,Gym Gloves,6,1446.61,50
+244,Python Guide,7,309.8,310
+245,Novel Bestseller,7,208.92,336
+246,Kids Comics Pro,7,367.65,138
+247,Exam Prep,7,265.42,481
+248,Biography,7,181.41,90
+249,Cookbook,7,498.66,428
+250,Lego Set Lite,8,1202.12,270
+251,RC Car,8,1363.35,50
+252,Board Game,8,1351.56,210
+253,Puzzle 1000pc Pro,8,1048.23,427
+254,Doll House,8,499.23,416
+255,Action Figure,8,1095.59,302
+256,Wireless Mouse,1,2172.73,369
+257,Mechanical Keyboard,1,1285.71,44
+258,USB-C Hub,1,1670.82,110
+259,Monitor 27in,1,2644.84,140
+260,Laptop Stand Pro,1,2233.53,227

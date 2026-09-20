@@ -22,8 +22,12 @@ SAFE_BUILTINS = {
 
 
 def run_code(datasets: dict[str, pd.DataFrame], code: str) -> pd.DataFrame:
+    import re
     for token in BLOCKED:
-        if token in code:
+        if token == "eval(":
+            if re.search(r"(?<!\.)\beval\s*\(", code):
+                raise ValueError(f"blocked token: {token}")
+        elif token in code:
             raise ValueError(f"blocked token: {token}")
     D = dict(datasets)
     for k, v in list(datasets.items()):

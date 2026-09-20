@@ -19,9 +19,10 @@
           "op": "groupby",
           "group_col": "cid",
           "metric_col": "amt",
+          "calc": null,
           "filter": null,
           "agg": "sum",
-          "limit": 1000
+          "limit": null
         },
         "retrieval_code": "result = D['orders'].groupby('cid').agg(val=('amt','sum')).reset_index().head(1000)",
         "agent_table": [
@@ -60,8 +61,8 @@
             "truth": 900
           }
         ],
-        "latency": 3.71,
-        "insight": "cid 1 = 1800, cid 2 = 350, cid 3 = 700, cid 4 = 900  \nCompared to the average of 937.5, cid\u202f1 is above average; cid\u202f2, cid\u202f3, and cid\u202f4 are below average."
+        "latency": 36.67,
+        "insight": "Top: cid\u202f1\u202f=\u202f1800  \nvs\u2011average: average\u202f\u2248\u202f937.5, top is about\u202f862.5 higher."
       },
       {
         "id": "base-2",
@@ -77,9 +78,10 @@
           "op": "groupby",
           "group_col": "city",
           "metric_col": "cid",
+          "calc": null,
           "filter": null,
           "agg": "count",
-          "limit": 1000
+          "limit": null
         },
         "retrieval_code": "result = D['customers'].groupby('city').agg(val=('cid','count')).reset_index().head(1000)",
         "agent_table": [
@@ -110,8 +112,8 @@
             "truth": 2
           }
         ],
-        "latency": 16.7,
-        "insight": "HYD: 2  \nvs-average: 2 vs 1.33"
+        "latency": 1.19,
+        "insight": "BLR has 1 customer.\nThis is below the average of 1.33 customers per city."
       },
       {
         "id": "base-3",
@@ -127,9 +129,10 @@
           "op": "groupby",
           "group_col": "dept",
           "metric_col": "salary",
+          "calc": null,
           "filter": null,
           "agg": "mean",
-          "limit": 1000
+          "limit": null
         },
         "retrieval_code": "result = D['hr.csv'].groupby('dept').agg(val=('salary','mean')).reset_index().head(1000)",
         "agent_table": [
@@ -152,8 +155,8 @@
             "truth": 57.5
           }
         ],
-        "latency": 13.18,
-        "insight": "eng, 95.0  \nvs\u2011average, 76.25"
+        "latency": 2.01,
+        "insight": "Engineering leads with an average salary of 95.0.\nThis is 37.5 higher than the overall average of 76.25."
       },
       {
         "id": "base-4",
@@ -168,20 +171,21 @@
           ],
           "joins": [
             {
-              "left": "orders",
-              "right": "customers",
+              "left": "orders.csv",
+              "right": "customers.csv",
               "on": "cid",
-              "how": "inner"
+              "how": "left"
             }
           ],
           "op": "groupby",
           "group_col": "city",
           "metric_col": "amt",
+          "calc": null,
           "filter": null,
           "agg": "sum",
-          "limit": 0
+          "limit": null
         },
-        "retrieval_code": "m = D['orders'].merge(D['customers'], on='cid', how='inner')\nresult = m.groupby('city').agg(val=('amt','sum')).reset_index().head(1000)",
+        "retrieval_code": "m = D['orders'].merge(D['customers'], on='cid', how='left')\nresult = m.groupby('city').agg(val=('amt','sum')).reset_index().head(1000)",
         "agent_table": [
           {
             "city": "BLR",
@@ -210,8 +214,8 @@
             "truth": 2500
           }
         ],
-        "latency": 17.99,
-        "insight": "BLR: 900, DEL: 350, HYD: 2500  \nvs avg: 1250"
+        "latency": 5.34,
+        "insight": "BLR tops the list with a total amount of 900.\nThis is below the average of 1,250 across the three cities."
       },
       {
         "id": "base-5",
@@ -221,25 +225,26 @@
         "reason": "Exact numerical match",
         "plan": {
           "datasets": [
-            "customers.csv",
-            "orders.csv"
+            "orders.csv",
+            "customers.csv"
           ],
           "joins": [
             {
-              "left": "customers",
-              "right": "orders",
+              "left": "orders.csv",
+              "right": "customers.csv",
               "on": "cid",
-              "how": "inner"
+              "how": "left"
             }
           ],
           "op": "groupby",
           "group_col": "tier",
           "metric_col": "amt",
+          "calc": null,
           "filter": null,
           "agg": "mean",
-          "limit": 0
+          "limit": null
         },
-        "retrieval_code": "m = D['customers'].merge(D['orders'], on='cid', how='inner')\nresult = m.groupby('tier').agg(val=('amt','mean')).reset_index().head(1000)",
+        "retrieval_code": "m = D['orders'].merge(D['customers'], on='cid', how='left')\nresult = m.groupby('tier').agg(val=('amt','mean')).reset_index().head(1000)",
         "agent_table": [
           {
             "tier": "gold",
@@ -260,8 +265,8 @@
             "truth": 416.6666666666667
           }
         ],
-        "latency": 16.08,
-        "insight": "gold\u202f500.0, silver\u202f416.6666666666667  \ngold is above the overall average, silver is below it."
+        "latency": 1.35,
+        "insight": "Gold members average $500 per order, while Silver members average about $417.\nGold members spend roughly $83 more than Silver members on average."
       }
     ]
   },
@@ -284,8 +289,8 @@
           ],
           "joins": [
             {
-              "left": "orders",
-              "right": "customers",
+              "left": "orders.csv",
+              "right": "customers.csv",
               "on": "customer_id",
               "how": "left"
             }
@@ -293,9 +298,10 @@
           "op": "groupby",
           "group_col": "city",
           "metric_col": "shipping_cost",
+          "calc": null,
           "filter": null,
           "agg": "sum",
-          "limit": 1000
+          "limit": null
         },
         "retrieval_code": "m = D['orders'].merge(D['customers'], on='customer_id', how='left')\nresult = m.groupby('city').agg(val=('shipping_cost','sum')).reset_index().head(1000)",
         "agent_table": [
@@ -334,8 +340,8 @@
             "truth": 60.0
           }
         ],
-        "latency": 22.14,
-        "insight": "Bangalore\u202f110.0,\u202fDelhi\u202f90.0,\u202fHyderabad\u202f130.0,\u202fMumbai\u202f60.0  \nAverage\u202f97.5\u202f\u2013\u202fBangalore above,\u202fDelhi below,\u202fHyderabad above,\u202fMumbai below."
+        "latency": 1.46,
+        "insight": "Bangalore has the highest total shipping cost at 110.0.\nThis is 10.0 higher than the average cost of 97.5 across all cities."
       },
       {
         "id": "cmplx-2",
@@ -345,37 +351,37 @@
         "reason": "Exact numerical match",
         "plan": {
           "datasets": [
-            "products.csv",
-            "categories.csv"
+            "categories.csv",
+            "products.csv"
           ],
-          "joins": [
-            {
-              "left": "products",
-              "right": "categories",
-              "on": "category_id",
-              "how": "inner"
-            }
-          ],
+          "joins": null,
+          "join": {
+            "left": "categories.csv",
+            "right": "products.csv",
+            "on": "category_id",
+            "how": "left"
+          },
           "op": "groupby",
           "group_col": "category_name",
           "metric_col": "unit_price",
+          "calc": null,
           "filter": null,
           "agg": "mean",
           "limit": 1000
         },
-        "retrieval_code": "m = D['products'].merge(D['categories'], on='category_id', how='inner')\nresult = m.groupby('category_name').agg(val=('unit_price','mean')).reset_index().head(1000)",
+        "retrieval_code": "m = D['categories.csv'].merge(D['products.csv'], on='category_id', how='left'); result = m.groupby('category_name').agg(val=('unit_price','mean')).reset_index().sort_values('val', ascending=False).head(1000)",
         "agent_table": [
           {
-            "category_name": "Apparel",
-            "val": 45.0
+            "category_name": "Furniture",
+            "val": 325.0
           },
           {
             "category_name": "Electronics",
             "val": 50.0
           },
           {
-            "category_name": "Furniture",
-            "val": 325.0
+            "category_name": "Apparel",
+            "val": 45.0
           },
           {
             "category_name": "Stationery",
@@ -400,8 +406,8 @@
             "truth": 17.5
           }
         ],
-        "latency": 20.7,
-        "insight": "Apparel: 45.0  \nvs\u2011average: 109.4"
+        "latency": 65.75,
+        "insight": "Top: ['Furniture', np.float64(325.0)] over 4 groups. Chart: bar."
       },
       {
         "id": "cmplx-3",
@@ -414,41 +420,41 @@
             "order_items.csv",
             "products.csv"
           ],
-          "joins": [
-            {
-              "left": "order_items",
-              "right": "products",
-              "on": "product_id",
-              "how": "inner"
-            }
-          ],
+          "joins": null,
+          "join": {
+            "left": "order_items.csv",
+            "right": "products.csv",
+            "on": "product_id",
+            "how": "left"
+          },
           "op": "groupby",
           "group_col": "product_name",
           "metric_col": "quantity",
+          "calc": null,
           "filter": null,
           "agg": "sum",
           "limit": 1000
         },
-        "retrieval_code": "m = D['order_items'].merge(D['products'], on='product_id', how='inner')\nresult = m.groupby('product_name').agg(val=('quantity','sum')).reset_index().head(1000)",
+        "retrieval_code": "m = D['order_items.csv'].merge(D['products.csv'], on='product_id', how='left'); result = m.groupby('product_name').agg(val=('quantity','sum')).reset_index().sort_values('val', ascending=False).head(1000)",
         "agent_table": [
-          {
-            "product_name": "Cotton T-Shirt",
-            "val": 2
-          },
-          {
-            "product_name": "Denim Jeans",
-            "val": 2
-          },
-          {
-            "product_name": "Ergonomic Chair",
-            "val": 2
-          },
           {
             "product_name": "Gel Pen Set",
             "val": 7
           },
           {
-            "product_name": "Mechanical Keyboard",
+            "product_name": "Wireless Mouse",
+            "val": 7
+          },
+          {
+            "product_name": "Notebook Pack",
+            "val": 5
+          },
+          {
+            "product_name": "Cotton T-Shirt",
+            "val": 2
+          },
+          {
+            "product_name": "Ergonomic Chair",
             "val": 2
           }
         ],
@@ -474,8 +480,8 @@
             "truth": 2
           }
         ],
-        "latency": 19.66,
-        "insight": "Cotton T-Shirt=2, Denim Jeans=2, Ergonomic Chair=2, Gel Pen Set=7, Mechanical Keyboard=2, Notebook Pack=5, Standing Desk=2, Wireless Mouse=7  \nvs\u2011average: 3.6"
+        "latency": 72.17,
+        "insight": "Top: ['Gel Pen Set', np.int64(7)] over 8 groups. Chart: bar."
       },
       {
         "id": "cmplx-4",
@@ -490,8 +496,8 @@
           ],
           "joins": [
             {
-              "left": "order_items",
-              "right": "orders",
+              "left": "order_items.csv",
+              "right": "orders.csv",
               "on": "order_id",
               "how": "left"
             }
@@ -499,9 +505,10 @@
           "op": "groupby",
           "group_col": "status",
           "metric_col": "quantity",
+          "calc": null,
           "filter": null,
           "agg": "sum",
-          "limit": 0
+          "limit": null
         },
         "retrieval_code": "m = D['order_items'].merge(D['orders'], on='order_id', how='left')\nresult = m.groupby('status').agg(val=('quantity','sum')).reset_index().head(1000)",
         "agent_table": [
@@ -540,8 +547,8 @@
             "truth": 6
           }
         ],
-        "latency": 22.23,
-        "insight": "Cancelled: 2, Delivered: 18, Pending: 3, Shipped: 6  \nCancelled: -5.25, Delivered: +10.75, Pending: -4.25, Shipped: -1.25"
+        "latency": 45.42,
+        "insight": "Cancelled: 2, Delivered: 18, Pending: 3, Shipped: 6  \nvs-average: 7.25"
       },
       {
         "id": "cmplx-5",
@@ -556,20 +563,21 @@
           ],
           "joins": [
             {
-              "left": "orders",
-              "right": "customers",
+              "left": "orders.csv",
+              "right": "customers.csv",
               "on": "customer_id",
-              "how": "inner"
+              "how": "left"
             }
           ],
           "op": "groupby",
           "group_col": "membership",
           "metric_col": "shipping_cost",
+          "calc": null,
           "filter": null,
           "agg": "sum",
-          "limit": 0
+          "limit": null
         },
-        "retrieval_code": "m = D['orders'].merge(D['customers'], on='customer_id', how='inner')\nresult = m.groupby('membership').agg(val=('shipping_cost','sum')).reset_index().head(1000)",
+        "retrieval_code": "m = D['orders'].merge(D['customers'], on='customer_id', how='left')\nresult = m.groupby('membership').agg(val=('shipping_cost', 'sum')).reset_index().head(1000)",
         "agent_table": [
           {
             "membership": "Bronze",
@@ -606,8 +614,8 @@
             "truth": 50.0
           }
         ],
-        "latency": 16.8,
-        "insight": "Bronze\u202f\u2013\u202f25.0, Gold\u202f\u2013\u202f160.0, Platinum\u202f\u2013\u202f155.0, Silver\u202f\u2013\u202f50.0  \nAverage\u202f=\u202f97.5; Bronze\u202f72.5 below, Gold\u202f62.5 above, Platinum\u202f57.5 above, Silver\u202f47.5 below."
+        "latency": 1.37,
+        "insight": "Top row: Bronze members have a total shipping cost of 25.0.\nVs-average: This is below the average shipping cost of 97.5 across all membership tiers."
       }
     ]
   },
@@ -631,26 +639,27 @@
           ],
           "joins": [
             {
-              "left": "order_items",
-              "right": "orders",
+              "left": "order_items.csv",
+              "right": "orders.csv",
               "on": "order_id",
-              "how": "inner"
+              "how": "left"
             },
             {
-              "left": "orders",
-              "right": "customers",
+              "left": "orders.csv",
+              "right": "customers.csv",
               "on": "customer_id",
-              "how": "inner"
+              "how": "left"
             }
           ],
           "op": "groupby",
           "group_col": "city",
           "metric_col": "quantity",
+          "calc": null,
           "filter": null,
           "agg": "sum",
-          "limit": 1000
+          "limit": null
         },
-        "retrieval_code": "m = D['order_items'].merge(D['orders'], on='order_id', how='inner').merge(D['customers'], on='customer_id', how='inner')\nresult = m.groupby('city').agg(val=('quantity','sum')).reset_index().head(1000)",
+        "retrieval_code": "m = D['order_items'].merge(D['orders'], on='order_id', how='left').merge(D['customers'], on='customer_id', how='left')\nresult = m.groupby('city').agg(val=('quantity','sum')).reset_index().head(1000)",
         "agent_table": [
           {
             "city": "Bangalore",
@@ -687,8 +696,8 @@
             "truth": 4
           }
         ],
-        "latency": 19.75,
-        "insight": "Bangalore: 13  \nvs average: 7.25"
+        "latency": 2.52,
+        "insight": "Bangalore leads with a total quantity of 13.\nThis is higher than the average of 5.75 across the four cities."
       },
       {
         "id": "multi-2",
@@ -704,26 +713,27 @@
           ],
           "joins": [
             {
-              "left": "order_items",
-              "right": "products",
+              "left": "order_items.csv",
+              "right": "products.csv",
               "on": "product_id",
-              "how": "inner"
+              "how": "left"
             },
             {
-              "left": "products",
-              "right": "categories",
+              "left": "products.csv",
+              "right": "categories.csv",
               "on": "category_id",
-              "how": "inner"
+              "how": "left"
             }
           ],
           "op": "groupby",
           "group_col": "department",
           "metric_col": "quantity",
+          "calc": null,
           "filter": null,
           "agg": "sum",
           "limit": null
         },
-        "retrieval_code": "m = D['order_items'].merge(D['products'], on='product_id', how='inner').merge(D['categories'], on='category_id', how='inner')\nresult = m.groupby('department').agg(val=('quantity','sum')).reset_index().head(1000)",
+        "retrieval_code": "m = D['order_items'].merge(D['products'], on='product_id', how='left').merge(D['categories'], on='category_id', how='left')\nresult = m.groupby('department').agg(val=('quantity','sum')).reset_index().head(1000)",
         "agent_table": [
           {
             "department": "Fashion",
@@ -760,8 +770,8 @@
             "truth": 9
           }
         ],
-        "latency": 24.08,
-        "insight": "Fashion: 4  \nvs average: 4 vs 7.25"
+        "latency": 1.64,
+        "insight": "Office leads with 12 units, followed by Technology at 9.\nThe average across all departments is 7.25."
       },
       {
         "id": "multi-3",
@@ -777,26 +787,27 @@
           ],
           "joins": [
             {
-              "left": "order_items",
-              "right": "orders",
+              "left": "order_items.csv",
+              "right": "orders.csv",
               "on": "order_id",
-              "how": "inner"
+              "how": "left"
             },
             {
-              "left": "orders",
-              "right": "customers",
+              "left": "orders.csv",
+              "right": "customers.csv",
               "on": "customer_id",
-              "how": "inner"
+              "how": "left"
             }
           ],
           "op": "groupby",
           "group_col": "membership",
           "metric_col": "quantity",
+          "calc": null,
           "filter": null,
           "agg": "sum",
-          "limit": 1000
+          "limit": null
         },
-        "retrieval_code": "m = D['order_items'].merge(D['orders'], on='order_id', how='inner').merge(D['customers'], on='customer_id', how='inner')\nresult = m.groupby('membership').agg(val=('quantity','sum')).reset_index().head(1000)",
+        "retrieval_code": "m = D['order_items'].merge(D['orders'], on='order_id', how='left').merge(D['customers'], on='customer_id', how='left')\nresult = m.groupby('membership').agg(val=('quantity','sum')).reset_index().head(1000)",
         "agent_table": [
           {
             "membership": "Bronze",
@@ -833,8 +844,8 @@
             "truth": 5
           }
         ],
-        "latency": 24.86,
-        "insight": "Bronze:\u202f5,\u202fGold:\u202f11,\u202fPlatinum:\u202f8,\u202fSilver:\u202f5  \nvs\u2011average (7.25):\u202fBronze\u202f\u20112.25,\u202fGold\u202f+3.75,\u202fPlatinum\u202f+0.75,\u202fSilver\u202f\u20112.25"
+        "latency": 14.38,
+        "insight": "Gold members account for the highest total quantity at 11.\nThis is 2.5 units above the average of 7.25 across all membership tiers."
       }
     ]
   },
@@ -858,9 +869,10 @@
           "op": "groupby",
           "group_col": "region",
           "metric_col": "sales",
+          "calc": null,
           "filter": null,
           "agg": "sum",
-          "limit": 1000
+          "limit": null
         },
         "retrieval_code": "result = D['nulls_sales.csv'].groupby('region').agg(val=('sales','sum')).reset_index().head(1000)",
         "agent_table": [
@@ -882,8 +894,8 @@
           }
         ],
         "ground_truth_table": [],
-        "latency": 15.73,
-        "insight": "South\u202f450.0  \nvs\u202faverage\u202f262.5"
+        "latency": 10.45,
+        "insight": "The South region leads with 450.0 in total sales.\nThis is 110.0 higher than the average of 312.5 across all regions."
       },
       {
         "id": "edge-2",
@@ -899,11 +911,12 @@
           "op": "filter",
           "group_col": null,
           "metric_col": null,
+          "calc": null,
           "filter": null,
-          "agg": "count",
-          "limit": 1200
+          "agg": null,
+          "limit": null
         },
-        "retrieval_code": "m = D['large_orders.csv']; result = m.head(1200)",
+        "retrieval_code": "result = D['large_orders.csv'].head(1000)",
         "agent_table": [
           {
             "order_id": 1,
@@ -932,8 +945,8 @@
           }
         ],
         "ground_truth_table": [],
-        "latency": 19.72,
-        "insight": "Order\u202f1 (Customer\u202f46) amount:\u202f219  \nCompared to the average amount\u202f220, it\u2019s just below average."
+        "latency": 11.45,
+        "insight": "The largest order in this list is order 8, which came to $430.\nThat amount is well above the typical order size, which averages around $210."
       },
       {
         "id": "edge-3",
@@ -949,19 +962,20 @@
           "op": "filter",
           "group_col": null,
           "metric_col": null,
+          "calc": null,
           "filter": {
             "col": "amt",
             "op": ">",
             "val": 99999999
           },
           "agg": null,
-          "limit": 1000
+          "limit": null
         },
-        "retrieval_code": "m = D['large_orders.csv']; m = m[m['amt'] > 99999999]; result = m.head(1000)",
+        "retrieval_code": "result = D['large_orders.csv'][D['large_orders.csv']['amt'] > 99999999].head(1000)",
         "agent_table": [],
         "ground_truth_table": [],
-        "latency": 13.18,
-        "insight": "order_id,customer_id,amt  \nAverage amt: N/A"
+        "latency": 19.69,
+        "insight": "No rows returned or error executing query: empty result"
       },
       {
         "id": "edge-4",
@@ -975,15 +989,16 @@
           "op": "describe",
           "group_col": null,
           "metric_col": null,
+          "calc": null,
           "filter": null,
-          "agg": null,
-          "limit": 0
+          "agg": "sum",
+          "limit": 10
         },
-        "retrieval_code": "m = pd.DataFrame(); result = m.head(20)",
+        "retrieval_code": "result = D",
         "agent_table": [],
         "ground_truth_table": [],
-        "latency": 13.33,
-        "insight": "nonexistent_dim,total_nonexistent_metric\nN/A\nvs-average,N/A"
+        "latency": 17.76,
+        "insight": "No rows returned or error executing query: If using all scalar values, you must pass an index"
       },
       {
         "id": "edge-5",
@@ -997,15 +1012,16 @@
           "op": "describe",
           "group_col": null,
           "metric_col": null,
+          "calc": null,
           "filter": null,
-          "agg": "count",
-          "limit": 0
+          "agg": "mean",
+          "limit": 10
         },
-        "retrieval_code": "m = pd.DataFrame(); result = m.head(20)",
+        "retrieval_code": "result = D",
         "agent_table": [],
         "ground_truth_table": [],
-        "latency": 13.96,
-        "insight": "Result,\nvs-average"
+        "latency": 17.79,
+        "insight": "No rows returned or error executing query: If using all scalar values, you must pass an index"
       }
     ]
   },
@@ -1028,20 +1044,21 @@
           ],
           "joins": [
             {
-              "left": "orders",
-              "right": "customers",
+              "left": "orders.csv",
+              "right": "customers.csv",
               "on": "customer_id",
-              "how": "inner"
+              "how": "left"
             }
           ],
           "op": "groupby",
           "group_col": "city",
           "metric_col": "shipping_cost",
+          "calc": null,
           "filter": null,
           "agg": "sum",
-          "limit": 0
+          "limit": null
         },
-        "retrieval_code": "m = D['orders'].merge(D['customers'], on='customer_id', how='inner')\nresult = m.groupby('city').agg(val=('shipping_cost','sum')).reset_index().head(1000)",
+        "retrieval_code": "m = D['orders'].merge(D['customers'], on='customer_id', how='left')\nresult = m.groupby('city').agg(val=('shipping_cost', 'sum')).reset_index().head(1000)",
         "agent_table": [
           {
             "city": "Ahmedabad",
@@ -1086,8 +1103,8 @@
             "truth": 39446.21
           }
         ],
-        "latency": 24.94,
-        "insight": "Chennai \u2013\u202f44797.87  \n\u2248\u202f8.6\u202f% above the city\u2011average shipping cost."
+        "latency": 21.14,
+        "insight": "Chennai has the highest total shipping cost at $44,797.87.\nThis is $2,438.50 above the average city total of $42,354.38."
       },
       {
         "id": "scale-2",
@@ -1102,20 +1119,21 @@
           ],
           "joins": [
             {
-              "left": "order_items",
-              "right": "products",
+              "left": "order_items.csv",
+              "right": "products.csv",
               "on": "product_id",
-              "how": "inner"
+              "how": "left"
             }
           ],
           "op": "groupby",
           "group_col": "product_name",
           "metric_col": "quantity",
+          "calc": null,
           "filter": null,
           "agg": "sum",
-          "limit": 1000
+          "limit": null
         },
-        "retrieval_code": "m = D['order_items'].merge(D['products'], on='product_id', how='inner')\nresult = m.groupby('product_name').agg(val=('quantity','sum')).reset_index().head(1000)",
+        "retrieval_code": "m = D['order_items'].merge(D['products'], on='product_id', how='left')\nresult = m.groupby('product_name').agg(val=('quantity','sum')).reset_index().head(1000)",
         "agent_table": [
           {
             "product_name": "Product_101",
@@ -1160,8 +1178,8 @@
             "truth": 119
           }
         ],
-        "latency": 21.69,
-        "insight": "Product_101,90  \n90\u202fvs\u202favg\u202f84.2"
+        "latency": 20.21,
+        "insight": "Product_107 leads with a total quantity of 125.\nThis is 25 units higher than the average of 100 across all products."
       },
       {
         "id": "scale-3",
@@ -1177,26 +1195,27 @@
           ],
           "joins": [
             {
-              "left": "order_items",
-              "right": "orders",
+              "left": "order_items.csv",
+              "right": "orders.csv",
               "on": "order_id",
-              "how": "inner"
+              "how": "left"
             },
             {
-              "left": "orders",
-              "right": "customers",
+              "left": "orders.csv",
+              "right": "customers.csv",
               "on": "customer_id",
-              "how": "inner"
+              "how": "left"
             }
           ],
           "op": "groupby",
           "group_col": "city",
           "metric_col": "quantity",
+          "calc": null,
           "filter": null,
           "agg": "sum",
-          "limit": 1000
+          "limit": null
         },
-        "retrieval_code": "m = D['order_items'].merge(D['orders'], on='order_id', how='inner').merge(D['customers'], on='customer_id', how='inner')\nresult = m.groupby('city').agg(val=('quantity','sum')).reset_index().head(1000)",
+        "retrieval_code": "m = D['order_items'].merge(D['orders'], on='order_id', how='left').merge(D['customers'], on='customer_id', how='left')\nresult = m.groupby('city').agg(val=('quantity','sum')).reset_index().head(1000)",
         "agent_table": [
           {
             "city": "Ahmedabad",
@@ -1241,8 +1260,8 @@
             "truth": 4538
           }
         ],
-        "latency": 26.93,
-        "insight": "Chennai\u202f\u2013\u202f4915  \nabove average by\u202f417 (average \u2248\u202f4498)"
+        "latency": 20.99,
+        "insight": "Chennai leads with a total quantity of 4,915.\nThis is 316 units above the average of 4,601."
       }
     ]
   }
