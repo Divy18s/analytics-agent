@@ -21,6 +21,7 @@
           "metric_col": "amt",
           "calc": null,
           "filter": null,
+          "date_group": null,
           "agg": "sum",
           "limit": null
         },
@@ -61,8 +62,8 @@
             "truth": 900
           }
         ],
-        "latency": 36.67,
-        "insight": "Top: cid\u202f1\u202f=\u202f1800  \nvs\u2011average: average\u202f\u2248\u202f937.5, top is about\u202f862.5 higher."
+        "latency": 1.58,
+        "insight": "The top customer (ID 1) has a total amount of 1800.\nThis is significantly higher than the average of 937.5 across all four customers."
       },
       {
         "id": "base-2",
@@ -80,6 +81,7 @@
           "metric_col": "cid",
           "calc": null,
           "filter": null,
+          "date_group": null,
           "agg": "count",
           "limit": null
         },
@@ -112,7 +114,7 @@
             "truth": 2
           }
         ],
-        "latency": 1.19,
+        "latency": 6.05,
         "insight": "BLR has 1 customer.\nThis is below the average of 1.33 customers per city."
       },
       {
@@ -131,6 +133,7 @@
           "metric_col": "salary",
           "calc": null,
           "filter": null,
+          "date_group": null,
           "agg": "mean",
           "limit": null
         },
@@ -155,8 +158,8 @@
             "truth": 57.5
           }
         ],
-        "latency": 2.01,
-        "insight": "Engineering leads with an average salary of 95.0.\nThis is 37.5 higher than the overall average of 76.25."
+        "latency": 7.15,
+        "insight": "The engineering department has an average salary of 95.0.\nThis is higher than the overall average of 76.25."
       },
       {
         "id": "base-4",
@@ -182,6 +185,7 @@
           "metric_col": "amt",
           "calc": null,
           "filter": null,
+          "date_group": null,
           "agg": "sum",
           "limit": null
         },
@@ -214,7 +218,7 @@
             "truth": 2500
           }
         ],
-        "latency": 5.34,
+        "latency": 12.88,
         "insight": "BLR tops the list with a total amount of 900.\nThis is below the average of 1,250 across the three cities."
       },
       {
@@ -241,6 +245,7 @@
           "metric_col": "amt",
           "calc": null,
           "filter": null,
+          "date_group": null,
           "agg": "mean",
           "limit": null
         },
@@ -265,8 +270,8 @@
             "truth": 416.6666666666667
           }
         ],
-        "latency": 1.35,
-        "insight": "Gold members average $500 per order, while Silver members average about $417.\nGold members spend roughly $83 more than Silver members on average."
+        "latency": 14.5,
+        "insight": "Gold members average $500.00 per order.\nSilver members average $416.67 per order."
       }
     ]
   },
@@ -300,6 +305,7 @@
           "metric_col": "shipping_cost",
           "calc": null,
           "filter": null,
+          "date_group": null,
           "agg": "sum",
           "limit": null
         },
@@ -340,8 +346,8 @@
             "truth": 60.0
           }
         ],
-        "latency": 1.46,
-        "insight": "Bangalore has the highest total shipping cost at 110.0.\nThis is 10.0 higher than the average cost of 97.5 across all cities."
+        "latency": 13.7,
+        "insight": "Bangalore tops the list with a total shipping cost of 110.0.\nThis is higher than the average cost of 97.5 across the four cities."
       },
       {
         "id": "cmplx-2",
@@ -351,37 +357,39 @@
         "reason": "Exact numerical match",
         "plan": {
           "datasets": [
-            "categories.csv",
-            "products.csv"
+            "products.csv",
+            "categories.csv"
           ],
-          "joins": null,
-          "join": {
-            "left": "categories.csv",
-            "right": "products.csv",
-            "on": "category_id",
-            "how": "left"
-          },
+          "joins": [
+            {
+              "left": "products.csv",
+              "right": "categories.csv",
+              "on": "category_id",
+              "how": "left"
+            }
+          ],
           "op": "groupby",
           "group_col": "category_name",
           "metric_col": "unit_price",
           "calc": null,
           "filter": null,
+          "date_group": null,
           "agg": "mean",
-          "limit": 1000
+          "limit": null
         },
-        "retrieval_code": "m = D['categories.csv'].merge(D['products.csv'], on='category_id', how='left'); result = m.groupby('category_name').agg(val=('unit_price','mean')).reset_index().sort_values('val', ascending=False).head(1000)",
+        "retrieval_code": "m = D['products'].merge(D['categories'], on='category_id', how='left')\nresult = m.groupby('category_name').agg(val=('unit_price','mean')).reset_index().head(1000)",
         "agent_table": [
           {
-            "category_name": "Furniture",
-            "val": 325.0
+            "category_name": "Apparel",
+            "val": 45.0
           },
           {
             "category_name": "Electronics",
             "val": 50.0
           },
           {
-            "category_name": "Apparel",
-            "val": 45.0
+            "category_name": "Furniture",
+            "val": 325.0
           },
           {
             "category_name": "Stationery",
@@ -406,8 +414,8 @@
             "truth": 17.5
           }
         ],
-        "latency": 65.75,
-        "insight": "Top: ['Furniture', np.float64(325.0)] over 4 groups. Chart: bar."
+        "latency": 12.59,
+        "insight": "Furniture leads the list with an average unit price of $325.00.\nThis is significantly higher than the overall average of $89.38 across all four categories."
       },
       {
         "id": "cmplx-3",
@@ -420,41 +428,43 @@
             "order_items.csv",
             "products.csv"
           ],
-          "joins": null,
-          "join": {
-            "left": "order_items.csv",
-            "right": "products.csv",
-            "on": "product_id",
-            "how": "left"
-          },
+          "joins": [
+            {
+              "left": "order_items.csv",
+              "right": "products.csv",
+              "on": "product_id",
+              "how": "left"
+            }
+          ],
           "op": "groupby",
           "group_col": "product_name",
           "metric_col": "quantity",
           "calc": null,
           "filter": null,
+          "date_group": null,
           "agg": "sum",
-          "limit": 1000
+          "limit": null
         },
-        "retrieval_code": "m = D['order_items.csv'].merge(D['products.csv'], on='product_id', how='left'); result = m.groupby('product_name').agg(val=('quantity','sum')).reset_index().sort_values('val', ascending=False).head(1000)",
+        "retrieval_code": "m = D['order_items'].merge(D['products'], on='product_id', how='left')\nresult = m.groupby('product_name').agg(val=('quantity','sum')).reset_index().head(1000)",
         "agent_table": [
-          {
-            "product_name": "Gel Pen Set",
-            "val": 7
-          },
-          {
-            "product_name": "Wireless Mouse",
-            "val": 7
-          },
-          {
-            "product_name": "Notebook Pack",
-            "val": 5
-          },
           {
             "product_name": "Cotton T-Shirt",
             "val": 2
           },
           {
+            "product_name": "Denim Jeans",
+            "val": 2
+          },
+          {
             "product_name": "Ergonomic Chair",
+            "val": 2
+          },
+          {
+            "product_name": "Gel Pen Set",
+            "val": 7
+          },
+          {
+            "product_name": "Mechanical Keyboard",
             "val": 2
           }
         ],
@@ -480,8 +490,8 @@
             "truth": 2
           }
         ],
-        "latency": 72.17,
-        "insight": "Top: ['Gel Pen Set', np.int64(7)] over 8 groups. Chart: bar."
+        "latency": 12.42,
+        "insight": "Gel Pen Set and Wireless Mouse lead the list with 7 units each.\nThis is well above the average of 3.6 units per product."
       },
       {
         "id": "cmplx-4",
@@ -507,6 +517,7 @@
           "metric_col": "quantity",
           "calc": null,
           "filter": null,
+          "date_group": null,
           "agg": "sum",
           "limit": null
         },
@@ -547,8 +558,8 @@
             "truth": 6
           }
         ],
-        "latency": 45.42,
-        "insight": "Cancelled: 2, Delivered: 18, Pending: 3, Shipped: 6  \nvs-average: 7.25"
+        "latency": 15.78,
+        "insight": "Delivered leads the pack with 18 units, while Cancelled trails at just 2.\nThe average across all statuses is 7.25, so Delivered sits well above that mark."
       },
       {
         "id": "cmplx-5",
@@ -574,10 +585,11 @@
           "metric_col": "shipping_cost",
           "calc": null,
           "filter": null,
+          "date_group": null,
           "agg": "sum",
           "limit": null
         },
-        "retrieval_code": "m = D['orders'].merge(D['customers'], on='customer_id', how='left')\nresult = m.groupby('membership').agg(val=('shipping_cost', 'sum')).reset_index().head(1000)",
+        "retrieval_code": "m = D['orders'].merge(D['customers'], on='customer_id', how='left')\nresult = m.groupby('membership').agg(val=('shipping_cost','sum')).reset_index().head(1000)",
         "agent_table": [
           {
             "membership": "Bronze",
@@ -614,16 +626,16 @@
             "truth": 50.0
           }
         ],
-        "latency": 1.37,
-        "insight": "Top row: Bronze members have a total shipping cost of 25.0.\nVs-average: This is below the average shipping cost of 97.5 across all membership tiers."
+        "latency": 12.27,
+        "insight": "Gold members account for the highest total shipping cost at $160.00.\nThis is significantly above the average shipping cost of $97.50 across all membership tiers."
       }
     ]
   },
   {
     "suite": "03_Multi_Table_Joins",
     "description": "3-way chained relational joins connecting 3+ datasets",
-    "passed": 3,
-    "total": 3,
+    "passed": 4,
+    "total": 4,
     "tests": [
       {
         "id": "multi-1",
@@ -656,6 +668,7 @@
           "metric_col": "quantity",
           "calc": null,
           "filter": null,
+          "date_group": null,
           "agg": "sum",
           "limit": null
         },
@@ -696,7 +709,7 @@
             "truth": 4
           }
         ],
-        "latency": 2.52,
+        "latency": 14.57,
         "insight": "Bangalore leads with a total quantity of 13.\nThis is higher than the average of 5.75 across the four cities."
       },
       {
@@ -730,6 +743,7 @@
           "metric_col": "quantity",
           "calc": null,
           "filter": null,
+          "date_group": null,
           "agg": "sum",
           "limit": null
         },
@@ -770,8 +784,8 @@
             "truth": 9
           }
         ],
-        "latency": 1.64,
-        "insight": "Office leads with 12 units, followed by Technology at 9.\nThe average across all departments is 7.25."
+        "latency": 18.65,
+        "insight": "Office leads the list with a total quantity of 12.\nThis is higher than the average of 7.25 across all departments."
       },
       {
         "id": "multi-3",
@@ -804,6 +818,7 @@
           "metric_col": "quantity",
           "calc": null,
           "filter": null,
+          "date_group": null,
           "agg": "sum",
           "limit": null
         },
@@ -844,8 +859,73 @@
             "truth": 5
           }
         ],
-        "latency": 14.38,
-        "insight": "Gold members account for the highest total quantity at 11.\nThis is 2.5 units above the average of 7.25 across all membership tiers."
+        "latency": 17.57,
+        "insight": "Top row: Bronze with a total quantity of 5.\nThis is below the average of 7.25 across all membership tiers."
+      },
+      {
+        "id": "multi-4",
+        "suite": "03_Multi_Table_Joins",
+        "question": "total revenue by month",
+        "status": "PASSED",
+        "reason": "Exact numerical match",
+        "plan": {
+          "datasets": [
+            "order_items.csv",
+            "orders.csv",
+            "products.csv"
+          ],
+          "joins": [
+            {
+              "left": "order_items.csv",
+              "right": "orders.csv",
+              "on": "order_id",
+              "how": "left"
+            },
+            {
+              "left": "order_items.csv",
+              "right": "products.csv",
+              "on": "product_id",
+              "how": "left"
+            }
+          ],
+          "op": "groupby",
+          "group_col": "month",
+          "metric_col": "revenue",
+          "calc": {
+            "col": "revenue",
+            "formula": "quantity * unit_price * (1 - discount)"
+          },
+          "filter": null,
+          "date_group": {
+            "col": "order_date",
+            "freq": "M"
+          },
+          "agg": "sum",
+          "limit": null
+        },
+        "retrieval_code": "m = D['order_items'].merge(D['orders'], on='order_id', how='left').merge(D['products'], on='product_id', how='left')\nm['revenue'] = m['quantity'] * m['unit_price'] * (1 - m['discount'])\nm['month'] = pd.to_datetime(m['order_date']).dt.to_period('M').astype(str)\nresult = m.groupby('month').agg(val=('revenue','sum')).reset_index().sort_values('month').head(1000)",
+        "agent_table": [
+          {
+            "month": "2024-01",
+            "val": 1183.75
+          },
+          {
+            "month": "2024-02",
+            "val": 623.0
+          }
+        ],
+        "ground_truth_table": [
+          {
+            "month": "2024-01",
+            "truth": 1183.75
+          },
+          {
+            "month": "2024-02",
+            "truth": 623.0
+          }
+        ],
+        "latency": 22.83,
+        "insight": "Top row: January 2024 with a value of 1183.75.\nThis is higher than the average of the two months shown, which is 903.375."
       }
     ]
   },
@@ -871,6 +951,7 @@
           "metric_col": "sales",
           "calc": null,
           "filter": null,
+          "date_group": null,
           "agg": "sum",
           "limit": null
         },
@@ -894,8 +975,8 @@
           }
         ],
         "ground_truth_table": [],
-        "latency": 10.45,
-        "insight": "The South region leads with 450.0 in total sales.\nThis is 110.0 higher than the average of 312.5 across all regions."
+        "latency": 11.18,
+        "insight": "The South region leads with 450.0 in total sales.\nThis is 150.0 higher than the average of 312.5 across all regions."
       },
       {
         "id": "edge-2",
@@ -913,6 +994,7 @@
           "metric_col": null,
           "calc": null,
           "filter": null,
+          "date_group": null,
           "agg": null,
           "limit": null
         },
@@ -945,7 +1027,7 @@
           }
         ],
         "ground_truth_table": [],
-        "latency": 11.45,
+        "latency": 8.14,
         "insight": "The largest order in this list is order 8, which came to $430.\nThat amount is well above the typical order size, which averages around $210."
       },
       {
@@ -968,13 +1050,14 @@
             "op": ">",
             "val": 99999999
           },
+          "date_group": null,
           "agg": null,
           "limit": null
         },
         "retrieval_code": "result = D['large_orders.csv'][D['large_orders.csv']['amt'] > 99999999].head(1000)",
         "agent_table": [],
         "ground_truth_table": [],
-        "latency": 19.69,
+        "latency": 14.95,
         "insight": "No rows returned or error executing query: empty result"
       },
       {
@@ -984,21 +1067,37 @@
         "status": "PASSED",
         "reason": "Handles unrecognized columns gracefully without uncaught exceptions",
         "plan": {
-          "datasets": [],
+          "datasets": [
+            "nulls_sales.csv"
+          ],
           "joins": null,
-          "op": "describe",
-          "group_col": null,
-          "metric_col": null,
+          "op": "groupby",
+          "group_col": "category",
+          "metric_col": "sales",
           "calc": null,
           "filter": null,
+          "date_group": null,
           "agg": "sum",
           "limit": 10
         },
-        "retrieval_code": "result = D",
-        "agent_table": [],
+        "retrieval_code": "result = D['nulls_sales.csv'].groupby('category').agg(val=('sales','sum')).reset_index().head(10)",
+        "agent_table": [
+          {
+            "category": "Electronics",
+            "val": 600.0
+          },
+          {
+            "category": "Furniture",
+            "val": 300.0
+          },
+          {
+            "category": "Stationery",
+            "val": 130.0
+          }
+        ],
         "ground_truth_table": [],
-        "latency": 17.76,
-        "insight": "No rows returned or error executing query: If using all scalar values, you must pass an index"
+        "latency": 11.56,
+        "insight": "Electronics leads with a value of 600.0.\nThis is 2.4 times the average of 343.3 across all categories."
       },
       {
         "id": "edge-5",
@@ -1007,21 +1106,55 @@
         "status": "PASSED",
         "reason": "Sandboxed executor blocks malicious tokens (DROP TABLE, import os)",
         "plan": {
-          "datasets": [],
+          "datasets": [
+            "large_orders.csv"
+          ],
           "joins": null,
           "op": "describe",
           "group_col": null,
           "metric_col": null,
           "calc": null,
           "filter": null,
-          "agg": "mean",
-          "limit": 10
+          "date_group": null,
+          "agg": null,
+          "limit": 0
         },
-        "retrieval_code": "result = D",
-        "agent_table": [],
+        "retrieval_code": "result = D['large_orders.csv'].describe().T",
+        "agent_table": [
+          {
+            "count": 1200.0,
+            "mean": 600.5,
+            "std": 346.5544690232691,
+            "min": 1.0,
+            "25%": 300.75,
+            "50%": 600.5,
+            "75%": 900.25,
+            "max": 1200.0
+          },
+          {
+            "count": 1200.0,
+            "mean": 25.064166666666665,
+            "std": 14.02797333909015,
+            "min": 1.0,
+            "25%": 12.75,
+            "50%": 25.5,
+            "75%": 37.0,
+            "max": 49.0
+          },
+          {
+            "count": 1200.0,
+            "mean": 261.6141666666667,
+            "std": 138.05187635973752,
+            "min": 10.0,
+            "25%": 141.0,
+            "50%": 266.0,
+            "75%": 385.25,
+            "max": 498.0
+          }
+        ],
         "ground_truth_table": [],
-        "latency": 17.79,
-        "insight": "No rows returned or error executing query: If using all scalar values, you must pass an index"
+        "latency": 13.09,
+        "insight": "Top row: 1,200 records with a mean of 600.5.\nVs-average: This is the highest mean value compared to the other two rows (25.1 and 261.6)."
       }
     ]
   },
@@ -1055,10 +1188,11 @@
           "metric_col": "shipping_cost",
           "calc": null,
           "filter": null,
+          "date_group": null,
           "agg": "sum",
           "limit": null
         },
-        "retrieval_code": "m = D['orders'].merge(D['customers'], on='customer_id', how='left')\nresult = m.groupby('city').agg(val=('shipping_cost', 'sum')).reset_index().head(1000)",
+        "retrieval_code": "m = D['orders'].merge(D['customers'], on='customer_id', how='left')\nresult = m.groupby('city').agg(val=('shipping_cost','sum')).reset_index().head(1000)",
         "agent_table": [
           {
             "city": "Ahmedabad",
@@ -1103,8 +1237,8 @@
             "truth": 39446.21
           }
         ],
-        "latency": 21.14,
-        "insight": "Chennai has the highest total shipping cost at $44,797.87.\nThis is $2,438.50 above the average city total of $42,354.38."
+        "latency": 12.4,
+        "insight": "Chennai leads with a total shipping cost of 44,797.87.\nThis is higher than the average city cost of 41,268.74."
       },
       {
         "id": "scale-2",
@@ -1130,6 +1264,7 @@
           "metric_col": "quantity",
           "calc": null,
           "filter": null,
+          "date_group": null,
           "agg": "sum",
           "limit": null
         },
@@ -1178,7 +1313,7 @@
             "truth": 119
           }
         ],
-        "latency": 20.21,
+        "latency": 14.46,
         "insight": "Product_107 leads with a total quantity of 125.\nThis is 25 units higher than the average of 100 across all products."
       },
       {
@@ -1212,6 +1347,7 @@
           "metric_col": "quantity",
           "calc": null,
           "filter": null,
+          "date_group": null,
           "agg": "sum",
           "limit": null
         },
@@ -1260,8 +1396,8 @@
             "truth": 4538
           }
         ],
-        "latency": 20.99,
-        "insight": "Chennai leads with a total quantity of 4,915.\nThis is 316 units above the average of 4,601."
+        "latency": 19.57,
+        "insight": "Chennai leads with a total quantity of 4,915.\nThis is 317 units above the average of 4,601."
       }
     ]
   }

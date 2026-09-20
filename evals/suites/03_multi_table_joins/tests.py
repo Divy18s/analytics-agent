@@ -50,4 +50,23 @@ TESTS = [
             .rename(columns={"quantity": "truth"})
         ),
     },
+    {
+        "id": "multi-4",
+        "question": "total revenue by month",
+        "group_col": "month",
+        "metric_col": "revenue",
+        "ground_truth_fn": lambda D: (
+            D["order_items.csv"]
+            .merge(D["orders.csv"], on="order_id", how="left")
+            .merge(D["products.csv"], on="product_id", how="left")
+            .assign(
+                revenue=lambda df: df["quantity"] * df["unit_price"] * (1 - df["discount"]),
+                month=lambda df: pd.to_datetime(df["order_date"]).dt.to_period("M").astype(str)
+            )
+            .groupby("month")["revenue"]
+            .sum()
+            .reset_index()
+            .rename(columns={"revenue": "truth"})
+        ),
+    },
 ]

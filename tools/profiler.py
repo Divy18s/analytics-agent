@@ -9,10 +9,13 @@ def _time_cols(df: pd.DataFrame) -> list[str]:
     for col in df.columns:
         if pd.api.types.is_datetime64_any_dtype(df[col]):
             out.append(col)
-        elif df[col].dtype == object and len(df):
+        elif (df[col].dtype == object or pd.api.types.is_string_dtype(df[col])) and len(df):
             try:
-                if pd.to_datetime(df[col].dropna().head(50), errors="coerce").notna().mean() > 0.8:
-                    out.append(col)
+                import warnings
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    if pd.to_datetime(df[col].dropna().head(50), errors="coerce").notna().mean() > 0.8:
+                        out.append(col)
             except Exception:
                 pass
     return out
