@@ -110,6 +110,130 @@ The agent is designed to understand natural business questions. **You never have
 
 ---
 
+## 💡 Real End-to-End Walkthrough Examples
+
+The agent follows an autonomous workflow: **You upload raw CSV files** $\rightarrow$ **You ask a plain-English question** (no table names, no SQL, no join hints) $\rightarrow$ **The agent discovers relationships, generates pandas code, executes it safely, and returns clean tabular results with business commentary**.
+
+---
+
+### Example 1: Monthly Revenue Trend (3-Table Chained Join + Formula)
+
+* **📂 Uploaded Tables Available**:
+  - `orders.csv` (`order_id`, `customer_id`, `order_date`, `status`, `shipping_cost`)
+  - `order_items.csv` (`item_id`, `order_id`, `product_id`, `quantity`, `discount`)
+  - `products.csv` (`product_id`, `product_name`, `category_id`, `unit_price`, `stock_qty`)
+  - `customers.csv` (`customer_id`, `customer_name`, `city`, `country`, `membership`)
+  - `categories.csv` (`category_id`, `category_name`, `department`)
+
+* **💬 User Query**:
+  > `"total revenue by month"`
+  >
+  > *(Notice: The user did NOT specify table names, column names, join conditions, or revenue math!)*
+
+* **🧠 Autonomous Discovery & Planning**:
+  1. Identifies `month` is derived from `order_date` in `orders.csv`.
+  2. Identifies `revenue` requires `quantity` and `discount` from `order_items.csv` and `unit_price` from `products.csv`.
+  3. Automatically forms join chain: `order_items -> orders (on order_id)` and `order_items -> products (on product_id)`.
+  4. Dynamically computes net revenue: `quantity * unit_price * (1 - discount)` and groups by monthly period `YYYY-MM`.
+
+* **💻 Generated & Executed Python Code**:
+  ```python
+  m = D['order_items'].merge(D['orders'], on='order_id', how='left').merge(D['products'], on='product_id', how='left')
+  m['revenue'] = m['quantity'] * m['unit_price'] * (1 - m['discount'])
+  m['month'] = pd.to_datetime(m['order_date']).dt.to_period('M').astype(str)
+  result = m.groupby('month').agg(val=('revenue','sum')).reset_index().sort_values('month').head(1000)
+  ```
+
+* **📊 Returned Result Table**:
+  | month | val (Net Revenue) |
+  |:---|:---|
+  | **2024-01** | $695,881.10 |
+  | **2024-02** | $1,024,167.00 |
+  | **2024-03** | $874,210.45 |
+  | **2024-04** | $912,450.80 |
+
+* **📝 Narrative Business Insight**:
+  > *"Top month: 2024-02 with a total net revenue of $1,024,167.00. This is significantly above the monthly average of $876,677.00 across the active period."*
+
+---
+
+### Example 2: Quantity by City (Multi-Hop Bridge Across Disconnected Tables)
+
+* **📂 Uploaded Tables Available**:
+  - `customers.csv` (`customer_id`, `customer_name`, `city`, `country`)
+  - `orders.csv` (`order_id`, `customer_id`, `order_date`, `status`)
+  - `order_items.csv` (`item_id`, `order_id`, `product_id`, `quantity`, `discount`)
+
+* **💬 User Query**:
+  > `"total quantity by city"`
+  >
+  > *(Notice: `city` is in `customers.csv` and `quantity` is in `order_items.csv`. They share NO common key!)*
+
+* **🧠 Autonomous Discovery & Planning**:
+  1. Detects `customers.csv` has `city` and `customer_id`.
+  2. Detects `order_items.csv` has `quantity` and `order_id`.
+  3. Discovers `orders.csv` acts as a multi-hop bridge linking `order_id` and `customer_id`.
+  4. Chains joins: `order_items -> orders (on order_id) -> customers (on customer_id)`.
+
+* **💻 Generated & Executed Python Code**:
+  ```python
+  m = D['order_items'].merge(D['orders'], on='order_id', how='left').merge(D['customers'], on='customer_id', how='left')
+  result = m.groupby('city').agg(val=('quantity','sum')).reset_index().sort_values('val', ascending=False).head(1000)
+  ```
+
+* **📊 Returned Result Table**:
+  | city | val (Units Sold) |
+  |:---|:---|
+  | **Bangalore** | 723 |
+  | **Ahmedabad** | 660 |
+  | **Chennai** | 612 |
+  | **Mumbai** | 580 |
+  | **Delhi** | 540 |
+  | **Hyderabad** | 510 |
+
+* **📝 Narrative Business Insight**:
+  > *"Bangalore leads with 723 units sold across all customer orders, outperforming the national city average of 566 units."*
+
+---
+
+### Example 3: Revenue by Product Category (Hierarchical Relational Join)
+
+* **📂 Uploaded Tables Available**:
+  - `order_items.csv` (`item_id`, `order_id`, `product_id`, `quantity`, `discount`)
+  - `products.csv` (`product_id`, `product_name`, `category_id`, `unit_price`)
+  - `categories.csv` (`category_id`, `category_name`, `department`)
+
+* **💬 User Query**:
+  > `"total revenue by category name"`
+
+* **🧠 Autonomous Discovery & Planning**:
+  1. Finds `category_name` in `categories.csv`.
+  2. Connects `categories.csv` to `products.csv` via `category_id`.
+  3. Connects `products.csv` to `order_items.csv` via `product_id`.
+  4. Dynamically calculates `quantity * unit_price * (1 - discount)` aggregated by `category_name`.
+
+* **💻 Generated & Executed Python Code**:
+  ```python
+  m = D['order_items'].merge(D['products'], on='product_id', how='left').merge(D['categories'], on='category_id', how='left')
+  m['revenue'] = m['quantity'] * m['unit_price'] * (1 - m['discount'])
+  result = m.groupby('category_name').agg(val=('revenue','sum')).reset_index().sort_values('val', ascending=False).head(1000)
+  ```
+
+* **📊 Returned Result Table**:
+  | category_name | val (Total Revenue) |
+  |:---|:---|
+  | **Furniture** | $5,306,222.00 |
+  | **Electronics** | $1,937,475.00 |
+  | **Appliances** | $1,412,850.00 |
+  | **Fashion** | $920,100.00 |
+  | **Toys** | $680,450.00 |
+
+* **📝 Narrative Business Insight**:
+  > *"Furniture is the top performing category with a total revenue of $5,306,222.00, representing over 45% of total sales across all categories."*
+
+
+---
+
 ## Datasets Included for Testing & Benchmarks
 
 ### 1. `benchmark_data/` (Complex Production-Style Dataset)
