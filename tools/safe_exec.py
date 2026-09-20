@@ -14,12 +14,25 @@ BLOCKED = ("import os", "import sys", "subprocess", "socket", "open(",
 MAX_ROWS = 1000
 
 
+SAFE_BUILTINS = {
+    "len": len, "int": int, "float": float, "str": str, "range": range,
+    "round": round, "min": min, "max": max, "sum": sum, "abs": abs,
+    "bool": bool, "list": list, "dict": dict, "zip": zip, "enumerate": enumerate
+}
+
+
 def run_code(datasets: dict[str, pd.DataFrame], code: str) -> pd.DataFrame:
     for token in BLOCKED:
         if token in code:
             raise ValueError(f"blocked token: {token}")
-    ns: dict = {"D": dict(datasets), "pd": pd, "result": None}
-    exec(compile(code, "<generated>", "exec"), {"__builtins__": {}}, ns)
+    D = dict(datasets)
+    for k, v in list(datasets.items()):
+        if "." in k:
+            D[k.rsplit(".", 1)[0]] = v
+        else:
+            D[f"{k}.csv"] = v
+    ns: dict = {"D": D, "pd": pd, "result": None}
+    exec(compile(code, "<generated>", "exec"), {"__builtins__": SAFE_BUILTINS}, ns)
     res = ns.get("result")
     if res is None:
         raise ValueError("code must assign DataFrame to `result`")

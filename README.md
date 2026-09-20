@@ -12,9 +12,10 @@ Upload 1..N CSVs → shared registry → ask across files (joins auto-detected) 
 pip install -r requirements.txt
 python evals/make_sample_data.py
 python evals/run_evals.py
-streamlit run app.py   # upload data/*.csv, ask "total amt by city joining orders and customers?"
+python evals/test_complex_joins.py     # 5-CSV complex join evaluation suite
+streamlit run app.py                  # upload complex_data/*.csv or data/*.csv
 ```
-Set `$env:GROQ_API_KEY` for LLM planning/coding.
+Set `GROQ_API_KEY` in `.env` (or `$env:GROQ_API_KEY`) for LLM planning/coding.
 
 ## What it does
 - Single-file: groupby/topn/filter/describe on any CSV, auto charts.

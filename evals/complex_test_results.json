@@ -1,0 +1,365 @@
+[
+  {
+    "id": 1,
+    "question": "total shipping cost by city joining orders and customers",
+    "status": "PASSED",
+    "reason": "Exact numerical match",
+    "plan": {
+      "datasets": [
+        "orders.csv",
+        "customers.csv"
+      ],
+      "join": {
+        "left": "orders",
+        "right": "customers",
+        "on": "customer_id",
+        "how": "left"
+      },
+      "op": "groupby",
+      "group_col": "city",
+      "metric_col": "shipping_cost",
+      "agg": "sum",
+      "limit": 1000
+    },
+    "retrieval_code": "m = D['orders'].merge(D['customers'], on='customer_id', how='left')\nresult = m.groupby('city').agg(val=('shipping_cost','sum')).reset_index().head(1000)",
+    "agent_table": [
+      {
+        "city": "Bangalore",
+        "val": 110.0
+      },
+      {
+        "city": "Delhi",
+        "val": 90.0
+      },
+      {
+        "city": "Hyderabad",
+        "val": 130.0
+      },
+      {
+        "city": "Mumbai",
+        "val": 60.0
+      }
+    ],
+    "ground_truth_table": [
+      {
+        "city": "Hyderabad",
+        "ground_truth_val": 130.0
+      },
+      {
+        "city": "Bangalore",
+        "ground_truth_val": 110.0
+      },
+      {
+        "city": "Delhi",
+        "ground_truth_val": 90.0
+      },
+      {
+        "city": "Mumbai",
+        "ground_truth_val": 60.0
+      }
+    ],
+    "insight": "Bangalore\u202f110.0,\u202fDelhi\u202f90.0,\u202fHyderabad\u202f130.0,\u202fMumbai\u202f60.0  \nvs\u2011average (97.5):\u202fBangalore\u202f+12.5,\u202fDelhi\u202f\u20117.5,\u202fHyderabad\u202f+32.5,\u202fMumbai\u202f\u201137.5",
+    "chart": "bar",
+    "trace": [
+      "plan={'datasets': ['orders.csv', 'customers.csv'], 'join': {'left': 'orders', 'right': 'customers', 'on': 'customer_id', 'how': 'left'}, 'op': 'groupby', 'group_col': 'city', 'metric_col': 'shipping_cost', 'agg': 'sum', 'limit': 1000} (llm)",
+      "attempt1: ok rows=4"
+    ]
+  },
+  {
+    "id": 2,
+    "question": "average unit price by category name joining products and categories",
+    "status": "PASSED",
+    "reason": "Exact numerical match",
+    "plan": {
+      "datasets": [
+        "products.csv",
+        "categories.csv"
+      ],
+      "join": {
+        "left": "products",
+        "right": "categories",
+        "on": "category_id",
+        "how": "left"
+      },
+      "op": "groupby",
+      "group_col": "category_name",
+      "metric_col": "unit_price",
+      "agg": "mean",
+      "limit": 0
+    },
+    "retrieval_code": "m = D['products'].merge(D['categories'], on='category_id', how='left')\nresult = m.groupby('category_name').agg(val=('unit_price', 'mean')).reset_index().head()",
+    "agent_table": [
+      {
+        "category_name": "Apparel",
+        "val": 45.0
+      },
+      {
+        "category_name": "Electronics",
+        "val": 50.0
+      },
+      {
+        "category_name": "Furniture",
+        "val": 325.0
+      },
+      {
+        "category_name": "Stationery",
+        "val": 17.5
+      }
+    ],
+    "ground_truth_table": [
+      {
+        "category_name": "Furniture",
+        "ground_truth_val": 325.0
+      },
+      {
+        "category_name": "Electronics",
+        "ground_truth_val": 50.0
+      },
+      {
+        "category_name": "Apparel",
+        "ground_truth_val": 45.0
+      },
+      {
+        "category_name": "Stationery",
+        "ground_truth_val": 17.5
+      }
+    ],
+    "insight": "Furniture, 325.0  \nvs-average, 109.4",
+    "chart": "bar",
+    "trace": [
+      "plan={'datasets': ['products.csv', 'categories.csv'], 'join': {'left': 'products', 'right': 'categories', 'on': 'category_id', 'how': 'left'}, 'op': 'groupby', 'group_col': 'category_name', 'metric_col': 'unit_price', 'agg': 'mean', 'limit': 0} (llm)",
+      "attempt1: ok rows=4"
+    ]
+  },
+  {
+    "id": 3,
+    "question": "total quantity by product name joining order items and products",
+    "status": "PASSED",
+    "reason": "Exact numerical match",
+    "plan": {
+      "datasets": [
+        "order_items.csv",
+        "products.csv"
+      ],
+      "join": {
+        "left": "order_items",
+        "right": "products",
+        "on": "product_id",
+        "how": "left"
+      },
+      "op": "groupby",
+      "group_col": "product_name",
+      "metric_col": "quantity",
+      "agg": "sum",
+      "limit": 0
+    },
+    "retrieval_code": "m = D['order_items'].merge(D['products'], on='product_id', how='left')\nresult = m.groupby('product_name').agg(val=('quantity', 'sum')).reset_index()",
+    "agent_table": [
+      {
+        "product_name": "Cotton T-Shirt",
+        "val": 2
+      },
+      {
+        "product_name": "Denim Jeans",
+        "val": 2
+      },
+      {
+        "product_name": "Ergonomic Chair",
+        "val": 2
+      },
+      {
+        "product_name": "Gel Pen Set",
+        "val": 7
+      },
+      {
+        "product_name": "Mechanical Keyboard",
+        "val": 2
+      },
+      {
+        "product_name": "Notebook Pack",
+        "val": 5
+      },
+      {
+        "product_name": "Standing Desk",
+        "val": 2
+      },
+      {
+        "product_name": "Wireless Mouse",
+        "val": 7
+      }
+    ],
+    "ground_truth_table": [
+      {
+        "product_name": "Gel Pen Set",
+        "ground_truth_val": 7
+      },
+      {
+        "product_name": "Wireless Mouse",
+        "ground_truth_val": 7
+      },
+      {
+        "product_name": "Notebook Pack",
+        "ground_truth_val": 5
+      },
+      {
+        "product_name": "Cotton T-Shirt",
+        "ground_truth_val": 2
+      },
+      {
+        "product_name": "Ergonomic Chair",
+        "ground_truth_val": 2
+      },
+      {
+        "product_name": "Denim Jeans",
+        "ground_truth_val": 2
+      },
+      {
+        "product_name": "Mechanical Keyboard",
+        "ground_truth_val": 2
+      },
+      {
+        "product_name": "Standing Desk",
+        "ground_truth_val": 2
+      }
+    ],
+    "insight": "Cotton T-Shirt: 2, Denim Jeans: 2, Ergonomic Chair: 2, Gel Pen Set: 7, Mechanical Keyboard: 2, Notebook Pack: 5, Standing Desk: 2, Wireless Mouse: 7  \nvs\u2011average (3.4): Cotton T-Shirt (below), Denim Jeans (below), Ergonomic Chair (below), Gel Pen Set (above), Mechanical Keyboard (below), Notebook Pack (above), Standing Desk (below), Wireless Mouse (above)",
+    "chart": "bar",
+    "trace": [
+      "plan={'datasets': ['order_items.csv', 'products.csv'], 'join': {'left': 'order_items', 'right': 'products', 'on': 'product_id', 'how': 'left'}, 'op': 'groupby', 'group_col': 'product_name', 'metric_col': 'quantity', 'agg': 'sum', 'limit': 0} (llm)",
+      "attempt1: ok rows=8"
+    ]
+  },
+  {
+    "id": 4,
+    "question": "total quantity by status joining order items and orders",
+    "status": "PASSED",
+    "reason": "Exact numerical match",
+    "plan": {
+      "datasets": [
+        "order_items.csv",
+        "orders.csv"
+      ],
+      "join": {
+        "left": "order_items",
+        "right": "orders",
+        "on": "order_id",
+        "how": "left"
+      },
+      "op": "groupby",
+      "group_col": "status",
+      "metric_col": "quantity",
+      "agg": "sum",
+      "limit": 0
+    },
+    "retrieval_code": "m = D['order_items'].merge(D['orders'], on='order_id', how='left')\nresult = m.groupby('status').agg(val=('quantity','sum')).reset_index().head(20)",
+    "agent_table": [
+      {
+        "status": "Cancelled",
+        "val": 2
+      },
+      {
+        "status": "Delivered",
+        "val": 18
+      },
+      {
+        "status": "Pending",
+        "val": 3
+      },
+      {
+        "status": "Shipped",
+        "val": 6
+      }
+    ],
+    "ground_truth_table": [
+      {
+        "status": "Delivered",
+        "ground_truth_val": 18
+      },
+      {
+        "status": "Shipped",
+        "ground_truth_val": 6
+      },
+      {
+        "status": "Pending",
+        "ground_truth_val": 3
+      },
+      {
+        "status": "Cancelled",
+        "ground_truth_val": 2
+      }
+    ],
+    "insight": "Delivered,18\nvs-average,18,7.25",
+    "chart": "bar",
+    "trace": [
+      "plan={'datasets': ['order_items.csv', 'orders.csv'], 'join': {'left': 'order_items', 'right': 'orders', 'on': 'order_id', 'how': 'left'}, 'op': 'groupby', 'group_col': 'status', 'metric_col': 'quantity', 'agg': 'sum', 'limit': 0} (llm)",
+      "attempt1: ok rows=4"
+    ]
+  },
+  {
+    "id": 5,
+    "question": "total shipping cost by membership joining orders and customers",
+    "status": "PASSED",
+    "reason": "Exact numerical match",
+    "plan": {
+      "datasets": [
+        "orders.csv",
+        "customers.csv"
+      ],
+      "join": {
+        "left": "orders",
+        "right": "customers",
+        "on": "customer_id",
+        "how": "left"
+      },
+      "op": "groupby",
+      "group_col": "membership",
+      "metric_col": "shipping_cost",
+      "agg": "sum",
+      "limit": 0
+    },
+    "retrieval_code": "m = D['orders'].merge(D['customers'], on='customer_id', how='left'); result = m.groupby('membership').agg(val=('shipping_cost','sum')).reset_index().sort_values('val', ascending=False).head(20)",
+    "agent_table": [
+      {
+        "membership": "Gold",
+        "val": 160.0
+      },
+      {
+        "membership": "Platinum",
+        "val": 155.0
+      },
+      {
+        "membership": "Silver",
+        "val": 50.0
+      },
+      {
+        "membership": "Bronze",
+        "val": 25.0
+      }
+    ],
+    "ground_truth_table": [
+      {
+        "membership": "Gold",
+        "ground_truth_val": 160.0
+      },
+      {
+        "membership": "Platinum",
+        "ground_truth_val": 155.0
+      },
+      {
+        "membership": "Silver",
+        "ground_truth_val": 50.0
+      },
+      {
+        "membership": "Bronze",
+        "ground_truth_val": 25.0
+      }
+    ],
+    "insight": "Gold: 160.0, Platinum: 155.0, Silver: 50.0, Bronze: 25.0  \nAverage: 97.5",
+    "chart": "bar",
+    "trace": [
+      "plan={'datasets': ['orders.csv', 'customers.csv'], 'join': {'left': 'orders', 'right': 'customers', 'on': 'customer_id', 'how': 'left'}, 'op': 'groupby', 'group_col': 'membership', 'metric_col': 'shipping_cost', 'agg': 'sum', 'limit': 0} (llm)",
+      "attempt1: empty, retry heuristic",
+      "attempt2: ok rows=4"
+    ]
+  }
+]

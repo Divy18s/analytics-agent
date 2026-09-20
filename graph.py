@@ -62,11 +62,50 @@ def _heuristic_plan(q: str, registry: dict) -> dict:
             "group_col": g, "metric_col": m, "agg": "sum", "limit": 20}
 
 
+import json
+import time
+from pathlib import Path
+
+HISTORY_FILE = Path(__file__).resolve().parent / "evals" / "query_history.jsonl"
+
+
+def _save_query_log(record: dict) -> None:
+    try:
+        HISTORY_FILE.parent.mkdir(exist_ok=True)
+        with open(HISTORY_FILE, "a", encoding="utf-8") as f:
+            f.write(json.dumps(record) + "\n")
+    except Exception:
+        pass
+
+
+def get_query_history() -> list[dict]:
+    if not HISTORY_FILE.exists():
+        return []
+    try:
+        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+            return [json.loads(line) for line in f if line.strip()]
+    except Exception:
+        return []
+
+
 def _code(plan: dict) -> str:
-    ds, j = plan["datasets"], plan.get("join")
+    ds, j = plan.get("datasets", []), plan.get("join") or plan.get("joins")
     g, m, agg, lim = plan.get("group_col"), plan.get("metric_col"), plan.get("agg", "sum"), int(plan.get("limit", 20) or 20)
-    base = f"D['{ds[0]}']" if not j else (
-        f"D['{j['left']}'].merge(D['{j['right']}'], on='{j['on']}', how='{j['how']}')")
+    if isinstance(j, list) and len(j) > 0:
+        base = f"D['{j[0]['left']}']"
+        for step in j:
+            r_ds = step['right']
+            on_col = step['on']
+            h = step.get('how', 'left')
+            base += f".merge(D['{r_ds}'], on='{on_col}', how='{h}')"
+    elif isinstance(j, dict):
+        l_ds = j['left']
+        r_ds = j['right']
+        on_col = j['on']
+        h = j.get('how', 'left')
+        base = f"D['{l_ds}'].merge(D['{r_ds}'], on='{on_col}', how='{h}')"
+    else:
+        base = f"D['{ds[0]}']" if ds else "pd.DataFrame()"
     if g and m:
         return (f"m = {base}; result = m.groupby('{g}')"
                 f".agg(val=('{(m)}','{agg}')).reset_index()"
@@ -101,5 +140,21 @@ def run_query(datasets: dict[str, pd.DataFrame], registry: dict, question: str) 
     insight = llm.narrate(question, table.head(10).to_csv(index=False)) or (
         f"Top: {table.iloc[0].tolist()} over {len(table)} groups. Chart: {kind}."
         if len(table) else "No rows returned.")
+    
+    # Store query retrieval record for history and comparison
+    record = {
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "question": question,
+        "plan": plan,
+        "code": code,
+        "mode": "llm" if p_llm else "heuristic",
+        "rows": len(table),
+        "columns": list(table.columns) if not table.empty else [],
+        "sample": table.head(5).to_dict(orient="records") if not table.empty else [],
+        "trace": trace,
+        "error": err
+    }
+    _save_query_log(record)
+
     return {"plan": plan, "code": code, "table": table, "fig": fig,
-            "chart": kind, "insight": insight, "trace": trace, "error": err}
+            "chart": kind, "insight": insight, "trace": trace, "error": err, "record": record}
