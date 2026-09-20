@@ -231,6 +231,68 @@ The agent follows an autonomous workflow: **You upload raw CSV files** $\rightar
 * **📝 Narrative Business Insight**:
   > *"Furniture is the top performing category with a total revenue of $5,306,222.00, representing over 45% of total sales across all categories."*
 
+---
+
+### Example 4: Top Spender Analysis (4-Table Deep Relational Join)
+
+* **📂 Uploaded Tables Available**:
+  - `customers.csv` (`customer_id`, `customer_name`, `city`, `country`, `membership`)
+  - `orders.csv` (`order_id`, `customer_id`, `order_date`, `status`, `shipping_cost`)
+  - `order_items.csv` (`item_id`, `order_id`, `product_id`, `quantity`, `discount`)
+  - `products.csv` (`product_id`, `product_name`, `category_id`, `unit_price`, `stock_qty`)
+
+* **💬 User Query**:
+  > `"Which Customer has spent Most amount"`
+
+* **🧠 Autonomous Discovery & Planning**:
+  1. Identifies target entity is `customer_name` in `customers.csv`.
+  2. Resolves total spend by linking `customers -> orders -> order_items -> products`.
+  3. Computes net spend dynamically: `quantity * unit_price * (1 - discount)`.
+  4. Aggregates by `customer_name`, sorts descending, and limits to top 1.
+
+* **💻 Generated & Executed Python Code**:
+  ```python
+  m = D['customers'].merge(D['orders'], on='customer_id', how='left').merge(D['order_items'], on='order_id', how='left').merge(D['products'], on='product_id', how='left')
+  m['total_spent'] = m['quantity'] * m['unit_price'] * (1 - m['discount'])
+  result = m.groupby('customer_name').agg(total_spent=('total_spent','sum')).reset_index().sort_values('total_spent', ascending=False).head(1)
+  ```
+
+* **📊 Returned Result Table**:
+  | customer_name | total_spent |
+  |:---|:---|
+  | **Meera Iyer** | $272,302.38 |
+
+* **📝 Narrative Business Insight**:
+  > *"Meera Iyer spent the highest total amount of $272,302.38 across all customer accounts."*
+
+---
+
+### Example 5: Instant Entity Lookup with Exact Value Filter
+
+* **📂 Uploaded Tables Available**:
+  - `products.csv` (`product_id`, `product_name`, `category_id`, `unit_price`, `stock_qty`)
+
+* **💬 User Query**:
+  > `"What is the price of Bluetooth Speaker"`
+
+* **🧠 Autonomous Discovery & Planning**:
+  1. Identifies single table `products.csv` contains both `product_name` and `unit_price`.
+  2. Detects equality filter condition: `product_name == 'Bluetooth Speaker'`.
+  3. Projects exact target column: `unit_price`.
+
+* **💻 Generated & Executed Python Code**:
+  ```python
+  result = D['products'][D['products']['product_name'] == 'Bluetooth Speaker'][['unit_price']].head(1)
+  ```
+
+* **📊 Returned Result Table**:
+  | unit_price |
+  |:---|
+  | **$2,130.74** |
+
+* **📝 Narrative Business Insight**:
+  > *"The unit price for Bluetooth Speaker is $2,130.74 with active stock recorded."*
+
 
 ---
 
