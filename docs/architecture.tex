@@ -342,7 +342,7 @@ The following 3 bullet points are formatted according to the high-density \textb
 
 \begin{itemize}[leftmargin=0.6cm,itemsep=2pt]
 \item \textbf{Architected an autonomous multi-agent analytics engine} with specialized \textbf{profiling, planning, coding, and storytelling agents} in a Streamlit UI with Plotly charts and execution traces; implemented dual-model failover (\texttt{gpt-oss-120b} $\rightarrow$ \texttt{qwen3.8-27b} on 429s) and an offline heuristic compiler for zero-downtime resilience.
-\item \textbf{Engineered autonomous schema discovery and multi-hop join pathfinding} using \textbf{Breadth-First Search (BFS)} across foreign keys to bridge non-adjacent tables in star/snowflake schemas (up to 5 tables); dynamically synthesized cross-table formulas ($\text{qty} \times \text{price} \times (1 - \text{discount})$) and monthly period buckets with zero user join hints.
+\item \textbf{Engineered autonomous schema discovery and multi-hop join pathfinding} using \textbf{Breadth-First Search (BFS)} across foreign keys to bridge non-adjacent tables in complex star/snowflake schemas; dynamically synthesized arbitrary cross-table algebraic metrics (margins, net revenue, ratios) and monthly period buckets with zero user join hints.
 \item \textbf{Built an AST execution sandbox with a 21-token injection blocklist} (\texttt{os}, \texttt{subprocess}, \texttt{drop table}), safe built-ins, 1,000-row cap, and an automated 3-iteration self-healing loop; achieved \textbf{100\% pass rate (22/22 tests)} on 15k rows, beating naive ChatGPT (12/12 vs.\ 0/12 monthly accuracy) and eliminating a \textbf{7.0\% (Rs.~6.96L) financial error margin}.
 \end{itemize}
 
