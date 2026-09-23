@@ -333,17 +333,17 @@ AST Security Sandboxing in Dynamic Runtimes & Lexical token filtering and restri
 
 \newpage
 % ============================================================
-\section{Resume section points (High-Density 3-Bullet ATS Format)}
+\section{Resume section points (Strict 3-Line High-Density Format)}
 
-The following 3 bullet points are formatted according to the high-density \textbf{What $\rightarrow$ How $\rightarrow$ Impact} framework matching the rest of the resume, preserving 100\% of technical and empirical metrics:
+The following 3 bullet points are formatted according to the high-density \textbf{What $\rightarrow$ How $\rightarrow$ Impact} framework, strictly budgeted to fit within 3 lines per bullet on standard resume layouts:
 
 \vspace{0.3cm}
-\noindent\textbf{Autonomous Relational Analytics Agent} $|$ \emph{Python, Pandas, Streamlit, Groq API, AST Sandbox, BFS, Plotly} \hfill SEP 2026
+\noindent\textbf{Autonomous Relational Analytics Agent} $|$ \emph{Python, Pandas, Streamlit, Groq API, AST Sandbox, BFS, Plotly} \hfill JULY 2026
 
-\begin{itemize}[leftmargin=0.6cm,itemsep=3pt]
-\item \textbf{Architected an autonomous multi-agent analytics engine} with specialized \textbf{profiling, planning, coding, and storytelling agents} in a ChatGPT-style Streamlit UI with Plotly charts, collapsible AST execution DAGs, and JSONL query audit logging; built a dual-tier model failover ladder (\texttt{gpt-oss-120b} $\rightarrow$ \texttt{qwen3.8-27b} on HTTP 429 rate limits) backed by an offline heuristic compiler for zero-downtime, zero-API-key resilience.
-\item \textbf{Engineered autonomous schema discovery and multi-hop join pathfinding} using \textbf{Breadth-First Search (BFS)} across candidate foreign keys to resolve non-adjacent table joins across star/snowflake schemas (up to 5 tables); dynamically synthesized cross-table algebraic metrics ($\text{quantity} \times \text{unit\_price} \times (1 - \text{discount})$) and temporal period buckets (\texttt{dt.to\_period('M')}) with zero hardcoded column or table hints.
-\item \textbf{Built an AST execution sandbox with a 21-token injection blocklist} (\texttt{os}, \texttt{subprocess}, \texttt{drop table}), safe built-in scoping, a 1,000-row cap, and an automated 3-iteration self-healing repair loop (\texttt{MAX\_FIXES=3}); benchmarked across 5 suites on 15,000-row datasets with $\Delta \le 0.05$ tolerance, achieving \textbf{100\% pass rate (22/22 tests)} and \textbf{12/12 vs.\ 0/12 monthly revenue accuracy vs.\ naive ChatGPT}, eliminating a \textbf{7.0\% (Rs.~6.96L) financial error margin} caused by hallucinated order filters.
+\begin{itemize}[leftmargin=0.6cm,itemsep=2pt]
+\item \textbf{Architected an autonomous multi-agent analytics engine} with specialized \textbf{profiling, planning, coding, and storytelling agents} in a Streamlit UI with Plotly charts and execution traces; implemented dual-model failover (\texttt{gpt-oss-120b} $\rightarrow$ \texttt{qwen3.8-27b} on 429s) and an offline heuristic compiler for zero-downtime resilience.
+\item \textbf{Engineered autonomous schema discovery and multi-hop join pathfinding} using \textbf{Breadth-First Search (BFS)} across foreign keys to bridge non-adjacent tables in star/snowflake schemas (up to 5 tables); dynamically synthesized cross-table formulas ($\text{qty} \times \text{price} \times (1 - \text{discount})$) and monthly period buckets with zero user join hints.
+\item \textbf{Built an AST execution sandbox with a 21-token injection blocklist} (\texttt{os}, \texttt{subprocess}, \texttt{drop table}), safe built-ins, 1,000-row cap, and an automated 3-iteration self-healing loop; achieved \textbf{100\% pass rate (22/22 tests)} on 15k rows, beating naive ChatGPT (12/12 vs.\ 0/12 monthly accuracy) and eliminating a \textbf{7.0\% (Rs.~6.96L) financial error margin}.
 \end{itemize}
 
 \appendix
